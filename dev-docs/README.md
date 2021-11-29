@@ -8,7 +8,7 @@ This is living documentation that will be updated, edited, and changed over time
 
 There are three major pieces of software behind the `avax-dex` concept. They work together to form a censorship-resistant application for exchanging transaction data for building trades.
 
-![ipfs-swap-service major subcomponents](./diagrams/software-interaction.png)
+![ipfs-swap-service major subcomponents](./diagrams/software-interaction2.png)
 
 - _Client_ could be a web browser, or a command-line client like [psf-bch-wallet](https://github.com/Permissionless-Software-Foundation/psf-bch-wallet) or [psf-avax-wallet](https://github.com/Permissionless-Software-Foundation/psf-avax-wallet).
 - [avax-dex](https://github.com/Permissionless-Software-Foundation/avax-dex) is the back-end REST API that maintains a local database of information that the client reads from.
