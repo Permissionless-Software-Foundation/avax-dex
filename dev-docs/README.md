@@ -1,12 +1,12 @@
 # Developer Documentation
 
-This is living documentation that will be updated, edited, and changed over time, using the same version control as the rest of the code. The purpose of this documentation is to capture and explain how this ipfs-swap-service interacts with the [P2WDB](https://github.com/Permissionless-Software-Foundation/ipfs-p2wdb-service), to create a permissionless, censorship-resistant database for storing trading orders. A web client will be built in the future that will interact with the REST API of this app.
+This is living documentation that will be updated, edited, and changed over time, using the same version control as the rest of the code. The purpose of this documentation is to capture and explain how this `avax-dex` interacts with the [P2WDB](https://github.com/Permissionless-Software-Foundation/ipfs-p2wdb-service), to create a permissionless, censorship-resistant database for storing trading orders. A web client will be built in the future that will interact with the REST API of this app.
 
 - [Specification](./specification.md)
 
 # Overview
 
-There are three major pieces of software behind the ipfs-swap-service concept. They work together to form a censorship-resistant application for exchanging transaction data for building trades.
+There are three major pieces of software behind the `avax-dex` concept. They work together to form a censorship-resistant application for exchanging transaction data for building trades.
 
 ![ipfs-swap-service major subcomponents](./diagrams/software-interaction.png)
 
