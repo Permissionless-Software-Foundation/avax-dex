@@ -34,7 +34,7 @@ Because OrbitDB is a p2p database, no one party holds the 'official' copy of the
 
 ## `avax-dex`
 
-The [avax-dex](https://github.com/Permissionless-Software-Foundation/avax-dex) replicates a copies of the global P2WDB entries concerned with AVAX token trades. It also has the ability to apply localized filters to the data before passing it on to the _Client_, to be displayed.
+The [avax-dex](https://github.com/Permissionless-Software-Foundation/avax-dex) replicates copies of the global P2WDB entries concerned with AVAX token trades. It also has the ability to apply localized filters to the data before passing it on to the _Client_, to be displayed.
 
 `avax-dex` is based on this [ipfs-service-provider boilerplate](https://github.com/Permissionless-Software-Foundation/ipfs-service-provider). It's a production-ready template for a web server, providing interfaces via REST API over HTTP, as well as JSON RPC over IPFS. It includes many features for building a web app. This includes user management and authentication, REST API and JSON RPC scaffolding, API documentation, Docker container generation, and extensive test coverage. It's intended to be customized for the needs of the website administrator.
 
@@ -48,16 +48,16 @@ These are just a brief, high-level overview. Review the [Specifications](./speci
 
 ## Writing to the Global Database
 
-Adding data to the global P2WDB is a result of the interaction between the _Client_ and the P2WDB. Ideally, `ipfs-swap-service` is not involved. The [p2wdb npm library](https://www.npmjs.com/package/p2wdb) can be leveraged for easy reading and writing to the P2WDB.
+Adding data to the global P2WDB is a result of the interaction between the _Client_ and the P2WDB. Ideally, `avax-dex` is not involved. The [p2wdb npm library](https://www.npmjs.com/package/p2wdb) can be leveraged for easy reading and writing to the P2WDB.
 
-During development, `avax-dex` is being used to submit Offers to the P2WDB and custody funds. When the project reaches maturity, these functions may be removed, and they should be handled by the Client, so that legal issues around custody of funds are not a problem.
+During development, `avax-dex` is being used to submit Offers to the P2WDB and custody funds. When the project reaches maturity, these functions may be removed, as they should be handled by the _Client_, so that legal issues around custody of funds are not a problem.
 
 Writing data follows these steps:
 
-- A user submits data to the POST `/offer` REST API endpoint. This will move the funds a segregated UTXO and submit the data to the P2WDB to convert the Offer to an Order. Offers are tracked by the local instance of `ipfs-swap-service`, but Orders are tracked by all instances of `avax-dex`.
-- The P2WDB REST API will then evaluate the data and attempt to update the p2p database using the TXID.
+- A user submits data to the POST `/offer` REST API endpoint. This will move the funds to a segregated UTXO and submit the data to the P2WDB to convert the Offer to an Order. Offers are tracked by the local instance of `avax-dex`, but Orders are tracked by all instances of `avax-dex` in the world.
+- The P2WDB will then evaluate the data and attempt to update the p2p database using the TXID.
 - Each peer on the network will independently validate the new database entry.
-- `avax-dex` will receive a webhook call to its POST `/order` endpoint. This event will trigger the import of the new data into the apps local Mongo database, and generate a new Order model.
+- `avax-dex` will receive a webhook call to its POST `/order` endpoint one the P2WDB has accepted the data from the Offer. This event will trigger the import of the new data into the apps local Mongo database, and generate a new Order model.
 
 ## Reading from the Local Database
 
