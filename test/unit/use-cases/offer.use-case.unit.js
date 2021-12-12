@@ -12,6 +12,7 @@ const sinon = require('sinon')
 // Unit under test (uut)
 const OfferLib = require('../../../src/use-cases/offer')
 const adapters = require('../mocks/adapters')
+const { AvalancheWallet } = require('../mocks/adapters/wallet')
 
 describe('#offer-use-case', () => {
   let uut
@@ -139,6 +140,32 @@ describe('#offer-use-case', () => {
 
       assert.equal(result.txid, 'fakeTxid')
       assert.equal(result.vout, 0)
+    })
+  })
+
+  describe('#getAddress', () => {
+    it('should retrieve a new key pair from the HD key ring', async () => {
+      const result = await uut.getAddress(1)
+      // mock wallet
+      const wallet = new AvalancheWallet()
+      uut.adapters.wallet.avaxWallet = wallet
+
+      assert.hasAllKeys(result, ['address', 'privateKey', 'publicKey', 'hdIndex'])
+      assert.equal(result.address, wallet.walletInfo.address)
+      assert.equal(result.privateKey, wallet.walletInfo.privateKey)
+      assert.equal(result.publicKey, wallet.walletInfo.publicKey)
+      assert.equal(result.hdIndex, 1)
+    })
+
+    it('should catch and throw an error', async () => {
+      try {
+        sandbox.stub(uut.adapters.wallet, 'getAvaxKeyPair').throws(new Error('test error'))
+        await uut.getAddress(1)
+
+        assert.fail('Unexpected code path')
+      } catch (error) {
+        assert.include(error.message, 'test error')
+      }
     })
   })
 })

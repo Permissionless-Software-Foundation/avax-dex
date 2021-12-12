@@ -143,6 +143,24 @@ class OfferLib {
       throw err
     }
   }
+
+  // Avax: retrieves a new key pair from the HD key ring as an object that contains a private key,
+  // public address, and the index of the HD wallet that the key pair was generated from.
+  async getAddress (hdIndex) {
+    try {
+      const keypair = await this.adapters.wallet.getAvaxKeyPair(hdIndex)
+
+      return {
+        address: keypair.getAddressString(),
+        privateKey: keypair.getPrivateKeyString(),
+        publicKey: keypair.getPublicKeyString(),
+        hdIndex
+      }
+    } catch (error) {
+      console.log(`Error on offer/getAddress(): ${error.message}`)
+      throw error
+    }
+  }
 }
 
 module.exports = OfferLib
