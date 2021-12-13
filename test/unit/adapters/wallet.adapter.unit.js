@@ -10,7 +10,7 @@ const fs = require('fs')
 
 // Local libraries.
 const WalletAdapter = require('../../../src/adapters/wallet')
-const { MockBchWallet } = require('../mocks/adapters/wallet')
+const { MockBchWallet, AvalancheWallet } = require('../mocks/adapters/wallet')
 
 // Global constants
 const testWalletFile = `${__dirname.toString()}/test-wallet.json`
@@ -253,6 +253,60 @@ describe('#wallet', () => {
         assert.fail('Unexpected code path')
       } catch (err) {
         assert.include(err.message, 'test error')
+      }
+    })
+  })
+
+  describe('#getAvaxKeyPair', () => {
+    it('should return a key pair object', async () => {
+      // mock instance of minimal-avax-wallet
+      uut.avaxWallet = new AvalancheWallet()
+
+      const result = await uut.getAvaxKeyPair(0)
+
+      assert.equal(uut.avaxWallet.walletInfo.address, result.getAddressString())
+      assert.equal(
+        uut.avaxWallet.walletInfo.privateKey,
+        result.getPrivateKeyString()
+      )
+      assert.equal(
+        uut.avaxWallet.walletInfo.publicKey,
+        result.getPublicKeyString()
+      )
+    })
+
+    it('should return a different key pair object', async () => {
+      // mock instance of minimal-avax-wallet
+      uut.avaxWallet = new AvalancheWallet()
+
+      sandbox.stub(uut, 'incrementNextAddress').resolves(1)
+
+      const result = await uut.getAvaxKeyPair()
+
+      assert.equal(
+        result.getAddressString(),
+        'X-avax1mp0rpa4zp350hdf4g868yejp0879zkgndd542l'
+      )
+      assert.equal(
+        result.getPrivateKeyString(),
+        'PrivateKey-XYcZQEkeJCXySv1gyvgPkbZWTpdPDhfXYYVNhcV4FEhU2MBvA'
+      )
+      assert.equal(
+        result.getPublicKeyString(),
+        '6svEhF9Ci7NGU9TcdbZ9Kpy4UjdfvWenN8AGmSPBrgZXeWodbj'
+      )
+    })
+
+    it('should catch and throw an error', async () => {
+      try {
+        // mock instance of minimal-avax-wallet
+        uut.avaxWallet = new AvalancheWallet()
+        uut.avaxWallet.walletInfo.mnemonic = ''
+
+        await uut.getAvaxKeyPair(0)
+        assert.fail('Unexpected code path')
+      } catch (err) {
+        assert.include(err.message, 'invalid mnemonic')
       }
     })
   })

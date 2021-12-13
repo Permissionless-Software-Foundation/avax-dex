@@ -104,12 +104,19 @@ const bch = {
 //   burnPsf: async () => {},
 //   generateSignature: async () => {}
 // }
-const { MockBchWallet } = require('./wallet')
+const { MockBchWallet, AvalancheWallet} = require('./wallet')
 const wallet = {
   burnPsf: async () => {},
   generateSignature: async () => {},
   getKeyPair: async () => {
     return { cashAddress: 'fakeAddr', wif: 'fakeWif', hdIndex: 1 }
+  },
+  getAvaxKeyPair: async() => {
+    return {
+      getAddressString: () => 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd',
+      getPrivateKeyString: () => 'PrivateKey-8NFb6YinvHtjtfHW3JRm3qoDdQceXEuTRcLRvj3BAxNg3dX7y',
+      getPublicKeyString: () => '5iwDpFGJdZXwhNjhC8VinAHT3T7ny3HiYLN2mdJUqK9Z2gorQj',
+    }
   },
   bchWallet: new MockBchWallet()
 }

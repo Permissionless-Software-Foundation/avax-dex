@@ -4,6 +4,7 @@
 
 // Public npm libraries
 const BchWallet = require('minimal-slp-wallet/index')
+const AvaxWallet = require('minimal-avax-wallet')
 
 // Local libraries
 const JsonFiles = require('./json-files')
@@ -19,6 +20,7 @@ class WalletAdapter {
     this.jsonFiles = new JsonFiles()
     this.WALLET_FILE = WALLET_FILE
     this.BchWallet = BchWallet
+    this.AvaxWallet = AvaxWallet
   }
 
   // Open the wallet file, or create one if the file doesn't exist.
@@ -83,6 +85,36 @@ class WalletAdapter {
     } catch (err) {
       console.error('Error in incrementNextAddress()')
       throw err
+    }
+  }
+
+  // Avalanche: This method returns the keypair object to generate
+  // a private key, public address, and an address
+  async getAvaxKeyPair (hdIndex) {
+    try {
+      if (hdIndex === undefined || hdIndex === null) {
+        hdIndex = await this.incrementNextAddress()
+      }
+
+      const mnemonic = this.avaxWallet.walletInfo.mnemonic
+
+      const isValidPhrase = this.avaxWallet.create.bip39.validateMnemonic(mnemonic)
+
+      if (!isValidPhrase) {
+        throw Error('invalid mnemonic')
+      }
+
+      const seed = this.avaxWallet.create.bip39.mnemonicToSeedSync(mnemonic)
+      const masterNode = this.avaxWallet.create.HDKey.fromMasterSeed(seed)
+      const accountNode = masterNode.derive(`m/44'/9000'/0'/0/${hdIndex}`)
+
+      const xkeyChain = this.avaxWallet.tokens.xchain.newKeyChain()
+      const keypair = xkeyChain.importKey(accountNode.privateKey)
+
+      return keypair
+    } catch (error) {
+      console.log(`Error on wallet/getAvaxKeyPair(): ${error.message}`)
+      throw error
     }
   }
 
