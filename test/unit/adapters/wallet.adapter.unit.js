@@ -23,7 +23,7 @@ describe('#wallet', () => {
     // Delete the test file if it exists.
     try {
       deleteFile(testWalletFile)
-    } catch (err) { }
+    } catch (err) {}
   })
 
   beforeEach(() => {
@@ -37,7 +37,7 @@ describe('#wallet', () => {
     // Delete the test file if it exists.
     try {
       deleteFile(testWalletFile)
-    } catch (err) { }
+    } catch (err) {}
   })
 
   describe('#openWallet', () => {
@@ -84,7 +84,7 @@ describe('#wallet', () => {
       try {
         // Force an error
         uut.WALLET_FILE = ''
-        uut.BchWallet = () => { }
+        uut.BchWallet = () => {}
 
         await uut.openWallet()
         // console.log('result: ', result)
@@ -124,7 +124,7 @@ describe('#wallet', () => {
         assert.fail('Unexpected code path')
       } catch (err) {
         // console.log('err: ', err)
-        assert.include(err.message, 'Cannot read properties')
+        assert.include(err.message, 'Cannot read property')
       }
     })
   })
@@ -193,7 +193,7 @@ describe('#wallet', () => {
 
         assert.fail('Unexpected code path')
       } catch (err) {
-        assert.include(err.message, 'Cannot read properties')
+        assert.include(err.message, 'Cannot read property')
       }
     })
   })
@@ -265,23 +265,36 @@ describe('#wallet', () => {
       const result = await uut.getAvaxKeyPair(0)
 
       assert.equal(uut.avaxWallet.walletInfo.address, result.getAddressString())
-      assert.equal(uut.avaxWallet.walletInfo.privateKey, result.getPrivateKeyString())
-      assert.equal(uut.avaxWallet.walletInfo.publicKey, result.getPublicKeyString())
+      assert.equal(
+        uut.avaxWallet.walletInfo.privateKey,
+        result.getPrivateKeyString()
+      )
+      assert.equal(
+        uut.avaxWallet.walletInfo.publicKey,
+        result.getPublicKeyString()
+      )
     })
 
     it('should return a different key pair object', async () => {
       // mock instance of minimal-avax-wallet
       uut.avaxWallet = new AvalancheWallet()
 
-      sandbox
-        .stub(uut, 'incrementNextAddress')
-        .resolves(1)
+      sandbox.stub(uut, 'incrementNextAddress').resolves(1)
 
       const result = await uut.getAvaxKeyPair()
 
-      assert.equal(result.getAddressString(), "X-avax1mp0rpa4zp350hdf4g868yejp0879zkgndd542l")
-      assert.equal(result.getPrivateKeyString(), "PrivateKey-XYcZQEkeJCXySv1gyvgPkbZWTpdPDhfXYYVNhcV4FEhU2MBvA")
-      assert.equal(result.getPublicKeyString(), "6svEhF9Ci7NGU9TcdbZ9Kpy4UjdfvWenN8AGmSPBrgZXeWodbj")
+      assert.equal(
+        result.getAddressString(),
+        'X-avax1mp0rpa4zp350hdf4g868yejp0879zkgndd542l'
+      )
+      assert.equal(
+        result.getPrivateKeyString(),
+        'PrivateKey-XYcZQEkeJCXySv1gyvgPkbZWTpdPDhfXYYVNhcV4FEhU2MBvA'
+      )
+      assert.equal(
+        result.getPublicKeyString(),
+        '6svEhF9Ci7NGU9TcdbZ9Kpy4UjdfvWenN8AGmSPBrgZXeWodbj'
+      )
     })
 
     it('should catch and throw an error', async () => {

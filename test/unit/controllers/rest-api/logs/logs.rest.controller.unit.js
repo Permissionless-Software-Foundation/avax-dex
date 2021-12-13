@@ -35,7 +35,7 @@ describe('Logapi', () => {
         assert.fail('Unexpected result')
       } catch (err) {
         assert.equal(err.status, 422)
-        assert.include(err.message, 'Cannot read properties')
+        assert.include(err.message, 'Cannot read property')
       }
     })
 

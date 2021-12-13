@@ -241,7 +241,7 @@ describe('#users-use-case', () => {
         assert.fail('Unexpected code path')
       } catch (err) {
         // console.log(err)
-        assert.include(err.message, 'Cannot read properties')
+        assert.include(err.message, 'Cannot read property')
       }
     })
 
@@ -399,7 +399,7 @@ describe('#users-use-case', () => {
         assert.fail('Unexpected code path.')
       } catch (err) {
         // console.log(err)
-        assert.include(err.message, 'Cannot read properties')
+        assert.include(err.message, 'Cannot read property')
       }
     })
 

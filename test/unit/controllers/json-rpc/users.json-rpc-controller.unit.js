@@ -333,7 +333,7 @@ describe('#UserRPC', () => {
       assert.equal(result.endpoint, 'updateUser')
       assert.equal(result.success, false)
       assert.equal(result.status, 422)
-      assert.include(result.message, 'Cannot read properties')
+      assert.include(result.message, 'Cannot read property')
     })
   })
 
@@ -375,7 +375,7 @@ describe('#UserRPC', () => {
       assert.equal(result.endpoint, 'getUser')
       assert.equal(result.success, false)
       assert.equal(result.status, 422)
-      assert.include(result.message, 'Cannot read properties')
+      assert.include(result.message, 'Cannot read property')
     })
   })
 
