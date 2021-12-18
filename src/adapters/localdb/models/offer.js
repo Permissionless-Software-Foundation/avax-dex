@@ -15,6 +15,10 @@ const Offer = new mongoose.Schema({
   utxoVout: { type: Number },
   numTokens: { type: Number },
 
+  txHex: { type: String },
+  addrReferences: { type: String },
+  hdIndex: { type: Number },
+
   //
   offerIpfsId: { type: String },
   offerBchAddr: { type: String },

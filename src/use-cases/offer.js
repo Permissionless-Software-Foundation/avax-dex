@@ -18,29 +18,35 @@ class OfferLib {
     this.bch = this.adapters.bch
   }
 
+  /**
+   * TODO:
+   * - Move new address generation to the create offer method, so I can keep track of the address it was sent to
+   * - offer entity, add address
+   * - Follow the steps used in generate offer to make a partial transaction with the information held in the newly created address
+   * - save the hex info into the p2wdb
+   */
+
   // Create a new offer model and add it to the Mongo database.
   async createOffer (entryObj) {
     try {
-      // console.log('createOffer(entryObj): ', entryObj)
-
       // Input Validation
       const offerEntity = this.offerEntity.validate(entryObj)
-      // console.log('offerEntity: ', offerEntity)
 
       // Ensure sufficient tokens exist to create the offer.
       await this.ensureFunds(offerEntity)
 
       // Move the tokens to holding address.
-      const utxoInfo = await this.moveTokens(offerEntity)
+      const addressInfo = await this.getAddress()
+      const utxoInfo = await this.moveTokens(offerEntity, addressInfo)
       console.log('utxoInfo: ', utxoInfo)
 
       // Update the UTXO store for the wallet.
       await this.adapters.wallet.bchWallet.bchjs.Util.sleep(3000)
-      await this.adapters.wallet.bchWallet.getUtxos()
+      await this.adapters.wallet.avaxWallet.getUtxos()
 
       // Update the offer with the new UTXO information.
       offerEntity.utxoTxid = utxoInfo.txid
-      offerEntity.utxoVout = utxoInfo.vout
+      offerEntity.utxoVout = utxoInfo.outputIdx
 
       // Burn PSF token to pay for P2WDB write.
       const txid = await this.adapters.wallet.burnPsf()
@@ -52,6 +58,17 @@ class OfferLib {
       const message = now.toISOString()
       const signature = await this.adapters.wallet.generateSignature(message)
       // console.log('signature: ', signature)
+
+      // create partial tx with the token inputs and avax output
+      const partialTx = await this.adapters.wallet.createPartialTxHex(
+        offerEntity.rateInSats,
+        addressInfo.privateKey
+      )
+
+      // Update the offer with the new partialTx information.
+      offerEntity.txHex = partialTx.txHex
+      offerEntity.addrReferences = partialTx.addrReferences
+      offerEntity.hdIndex = addressInfo.hdIndex
 
       const p2wdbObj = {
         txid,
@@ -76,22 +93,21 @@ class OfferLib {
   // Move the tokens indicated in the offer to a temporary holding address.
   // This will generate the UTXO used in the Signal message. This function
   // moves the funds and returns the UTXO information.
-  async moveTokens (offerEntity) {
+  async moveTokens (offerEntity, addressInfo) {
     try {
-      const keyPair = await this.adapters.wallet.getKeyPair()
-      console.log('keyPair: ', keyPair)
+      console.log('addressInfo: ', addressInfo)
 
       const receiver = {
-        address: keyPair.cashAddress,
-        tokenId: offerEntity.tokenId,
-        qty: offerEntity.numTokens
+        address: addressInfo.address,
+        amount: offerEntity.numTokens,
+        assetID: offerEntity.tokenId
       }
 
-      const txid = await this.adapters.wallet.bchWallet.sendTokens(receiver, 3)
+      const txid = await this.adapters.wallet.avaxWallet.send([receiver])
 
       const utxoInfo = {
         txid,
-        vout: 0
+        vout: '00000000' // equivalent to vout 0
       }
 
       return utxoInfo
@@ -105,33 +121,18 @@ class OfferLib {
   // trade.
   async ensureFunds (offerEntity) {
     try {
-      // console.log('this.adapters.wallet: ', this.adapters.wallet.bchWallet)
-
       // Get UTXOs.
-      const utxos = this.adapters.wallet.bchWallet.utxos.utxoStore
+      const utxos = this.adapters.wallet.avaxWallet.utxos.assets
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       if (offerEntity.buyOrSell.includes('sell')) {
         // Sell Offer
-
-        // Get token UTXOs that match the token in the offer.
-        const tokenUtxos = utxos.slpUtxos.type1.tokens.filter(
-          (x) => x.tokenId === offerEntity.tokenId
-        )
-        // console.log('tokenUtxos: ', tokenUtxos)
-
-        // Get the total amount of tokens in the wallet that match the token
-        // in the offer.
-        let totalTokenBalance = 0
-        tokenUtxos.map((x) => (totalTokenBalance += parseFloat(x.tokenQty)))
-        // console.log('totalTokenBalance: ', totalTokenBalance)
+        const asset = utxos.find(item => item.assetID === offerEntity.tokenId)
 
         // If there are fewer tokens in the wallet than what's in the offer,
         // throw an error.
-        if (totalTokenBalance <= offerEntity.numTokens) {
-          throw new Error(
-            'App wallet does not have enough tokens to satisfy the SELL offer.'
-          )
+        if (!asset || asset.amount < offerEntity.numTokens) {
+          throw new Error('App wallet does not have enough tokens to satisfy the SELL offer.')
         }
       } else {
         // Buy Offer

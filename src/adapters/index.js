@@ -74,12 +74,16 @@ class Adapters {
       // Start the IPFS node.
       await this.ipfs.start()
 
-      // Open the wallet file
-      const walletData = await this.wallet.openWallet()
+      // Open the wallet files
+      const bchWallet = await this.wallet.openWallet(false)
+      const avaxWallet = await this.wallet.openWallet(true)
       // console.log('walletData: ', walletData)
 
       // Instance the wallet.
-      await this.wallet.instanceWallet(walletData, this.bchjs)
+      await Promise.all([
+        this.wallet.instanceWallet(bchWallet, this.bchjs),
+        this.wallet.instanceAvaxWallet(avaxWallet)
+      ])
     } catch (err) {
       console.error('Error in adapters/index.js/start()')
       throw err
