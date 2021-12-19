@@ -23,7 +23,7 @@ class OfferLib {
    * - Move new address generation to the create offer method, so I can keep track of the address it was sent to
    * - offer entity, add address
    * - Follow the steps used in generate offer to make a partial transaction with the information held in the newly created address
-   * - save the hex info into the p2wdb
+   * - save the hex info into the p2wdb (use p2wdb npm library)
    */
 
   // Create a new offer model and add it to the Mongo database.
@@ -40,7 +40,9 @@ class OfferLib {
       const utxoInfo = await this.moveTokens(offerEntity, addressInfo)
       console.log('utxoInfo: ', utxoInfo)
 
-      // Update the UTXO store for the wallet.
+      // Update the UTXO store for the wallet. Wait a few seconds for the
+      // network/indexer/full-node to update its state after broadcasting
+      // the last transaction.
       await this.adapters.wallet.bchWallet.bchjs.Util.sleep(3000)
       await this.adapters.wallet.avaxWallet.getUtxos()
 
@@ -48,6 +50,8 @@ class OfferLib {
       offerEntity.utxoTxid = utxoInfo.txid
       offerEntity.utxoVout = utxoInfo.outputIdx
 
+      // TODO: P2WDB interaction code should be replaced with function calls to
+      // the p2wdb npm library: https://www.npmjs.com/package/p2wdb
       // Burn PSF token to pay for P2WDB write.
       const txid = await this.adapters.wallet.burnPsf()
       console.log('burn txid: ', txid)
@@ -117,7 +121,7 @@ class OfferLib {
     }
   }
 
-  // Ensure that the wallet has enough BCH and tokens to complete the requested
+  // Ensure that the wallet has enough AVAX and tokens to complete the requested
   // trade.
   async ensureFunds (offerEntity) {
     try {
@@ -132,7 +136,9 @@ class OfferLib {
         // If there are fewer tokens in the wallet than what's in the offer,
         // throw an error.
         if (!asset || asset.amount < offerEntity.numTokens) {
-          throw new Error('App wallet does not have enough tokens to satisfy the SELL offer.')
+          throw new Error(
+            'App wallet does not have enough tokens to satisfy the SELL offer.'
+          )
         }
       } else {
         // Buy Offer

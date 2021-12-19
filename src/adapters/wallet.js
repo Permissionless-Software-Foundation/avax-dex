@@ -118,7 +118,9 @@ class WalletAdapter {
 
       const mnemonic = this.avaxWallet.walletInfo.mnemonic
 
-      const isValidPhrase = this.avaxWallet.create.bip39.validateMnemonic(mnemonic)
+      const isValidPhrase = this.avaxWallet.create.bip39.validateMnemonic(
+        mnemonic
+      )
 
       if (!isValidPhrase) {
         throw Error('invalid mnemonic')
@@ -138,6 +140,7 @@ class WalletAdapter {
     }
   }
 
+  // BCH-specific.
   // This method returns an object that contains a private key WIF, public address,
   // and the index of the HD wallet that the key pair was generated from.
   // TODO: Allow input integer. If input is used, use that as the index. If no
@@ -176,6 +179,7 @@ class WalletAdapter {
     }
   }
 
+  // BCH-specific
   // Create an instance of minimal-slp-wallet. Use data in the wallet.json file,
   // and pass the bch-js information to the minimal-slp-wallet library.
   async instanceWallet (walletData, bchjs) {
@@ -205,7 +209,9 @@ class WalletAdapter {
   async instanceAvaxWallet (walletData) {
     try {
       if (typeof walletData !== 'object') {
-        throw new Error('walletData must be an object with the wallet information')
+        throw new Error(
+          'walletData must be an object with the wallet information'
+        )
       }
 
       // Instantiate minimal-avax-wallet.
@@ -221,7 +227,7 @@ class WalletAdapter {
     }
   }
 
-  // Make offfer Tx
+  // Make offer Tx
   async createPartialTxHex (avaxAmount, privateKey) {
     let tokenWallet = this.avaxWallet
 
@@ -268,6 +274,8 @@ class WalletAdapter {
     }
   }
 
+  // BCH specific
+  // TODO: This can be removed in favor of using the p2wdb npm library?
   // Generate a cryptographic signature, required to write to the P2WDB.
   async generateSignature (message) {
     try {
@@ -290,6 +298,8 @@ class WalletAdapter {
     }
   }
 
+  // BCH specific
+  // TODO: This can be removed in favor of using the p2wdb npm library?
   // Burn enough PSF to generate a valide proof-of-burn for writing to the P2WDB.
   async burnPsf () {
     try {
