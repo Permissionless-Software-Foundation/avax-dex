@@ -14,12 +14,11 @@ async function start () {
       lokadId: 'SWP',
       messageType: 1,
       messageClass: 1,
-      tokenId:
-        '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0',
+      tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
       buyOrSell: 'sell',
       rateInSats: 1000,
       minSatsToExchange: 10,
-      numTokens: 0.02
+      numTokens: 3
     }
 
     const options = {

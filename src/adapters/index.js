@@ -79,6 +79,7 @@ class Adapters {
       const avaxWallet = await this.wallet.openWallet(true)
       // console.log('walletData: ', walletData)
 
+      this.p2wdb = new P2wdbAdapter({ bchjs: this.bchjs })
       // Instance the wallet.
       await Promise.all([
         this.wallet.instanceWallet(bchWallet, this.bchjs),

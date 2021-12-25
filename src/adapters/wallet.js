@@ -113,7 +113,7 @@ class WalletAdapter {
   async getAvaxKeyPair (hdIndex) {
     try {
       if (hdIndex === undefined || hdIndex === null) {
-        hdIndex = await this.incrementNextAddress()
+        hdIndex = await this.incrementNextAddress(true)
       }
 
       const mnemonic = this.avaxWallet.walletInfo.mnemonic
@@ -132,6 +132,8 @@ class WalletAdapter {
 
       const xkeyChain = this.avaxWallet.tokens.xchain.newKeyChain()
       const keypair = xkeyChain.importKey(accountNode.privateKey)
+      // add index to keep track of it
+      keypair.hdIndex = hdIndex
 
       return keypair
     } catch (error) {
@@ -229,48 +231,51 @@ class WalletAdapter {
 
   // Make offer Tx
   async createPartialTxHex (avaxAmount, privateKey) {
-    let tokenWallet = this.avaxWallet
+    try {
+      let tokenWallet = this.avaxWallet
 
-    if (privateKey) {
-      tokenWallet = new this.AvaxWallet(privateKey)
-      await tokenWallet.walletInfoPromise
-    }
+      if (privateKey) {
+        tokenWallet = new this.AvaxWallet(privateKey)
+        await tokenWallet.walletInfoPromise
+        // await tokenWallet.getUtxos()
+      }
 
-    // arrange the inputs
-    const addrReferences = {}
-    const inputs = []
-    const address = tokenWallet.walletInfo.address
+      // take just the first utxo as input, since it's a single utxo address
+      const addrReferences = {}
+      const address = tokenWallet.walletInfo.address
 
-    for (const item of tokenWallet.utxos.utxoStore) {
-      const utxo = tokenWallet.utxos.encodeUtxo(item, address)
-      const utxoID = utxo.getUTXOID()
-
+      const [tokenUtxo] = tokenWallet.utxos.utxoStore
+      const tokenInput = tokenWallet.utxos.encodeUtxo(tokenUtxo, address)
+      const inputs = [tokenInput]
+      const utxoID = tokenInput.getUTXOID()
       addrReferences[utxoID] = address
-      inputs.push(utxo)
-    }
 
-    // get the desired asset outputs for the transaction
-    const avaxOutput = tokenWallet.utxos.formatOutput({
-      amount: avaxAmount,
-      address: this.avaxWallet.walletInfo.address,
-      assetID: tokenWallet.sendAvax.avaxID
-    })
+      // get the desired asset outputs for the transaction
+      const avaxOutput = tokenWallet.utxos.formatOutput({
+        amount: avaxAmount,
+        address: this.avaxWallet.walletInfo.address,
+        assetID: tokenWallet.sendAvax.avaxID
+      })
 
-    // Build the transcation
-    const partialTx = new tokenWallet.utxos.avm.BaseTx(
-      tokenWallet.ava.getNetworkID(),
-      tokenWallet.bintools.cb58Decode(
-        tokenWallet.tokens.xchain.getBlockchainID()
-      ),
-      [avaxOutput],
-      inputs
-    )
+      // Build the transcation
+      const partialTx = new tokenWallet.utxos.avm.BaseTx(
+        tokenWallet.ava.getNetworkID(),
+        tokenWallet.bintools.cb58Decode(
+          tokenWallet.tokens.xchain.getBlockchainID()
+        ),
+        [avaxOutput],
+        inputs
+      )
 
-    const hexString = partialTx.toBuffer().toString('hex')
+      const hexString = partialTx.toBuffer().toString('hex')
 
-    return {
-      txHex: hexString,
-      addrReferences: JSON.stringify(addrReferences)
+      return {
+        txHex: hexString,
+        addrReferences: JSON.stringify(addrReferences)
+      }
+    } catch (error) {
+      console.log('error wallet.json/createPartialTxHex():')
+      throw error
     }
   }
 
