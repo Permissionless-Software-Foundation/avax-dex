@@ -14,16 +14,16 @@ const { MockBchWallet, AvalancheWallet } = require('../mocks/adapters/wallet')
 
 // Global constants
 const testWalletFile = `${__dirname.toString()}/test-wallet.json`
+const testAvaxWalletFile = `${__dirname.toString()}/test-avax-wallet.json`
 
 describe('#wallet', () => {
   let uut
+  /** @type {sinon.SinonSandbox} */
   let sandbox
 
   before(() => {
     // Delete the test file if it exists.
-    try {
-      deleteFile(testWalletFile)
-    } catch (err) {}
+    deleteFiles([testWalletFile, testAvaxWalletFile])
   })
 
   beforeEach(() => {
@@ -35,15 +35,14 @@ describe('#wallet', () => {
 
   after(() => {
     // Delete the test file if it exists.
-    try {
-      deleteFile(testWalletFile)
-    } catch (err) {}
+    deleteFiles([testWalletFile, testAvaxWalletFile])
   })
 
   describe('#openWallet', () => {
-    it('should create a new wallet what wallet file does not exist', async () => {
+    it('should create a new wallet if file does not exist', async () => {
       // Mock dependencies
       uut.BchWallet = MockBchWallet
+      const writeJsonFunction = sandbox.spy(uut.jsonFiles, 'writeJSON')
 
       // Ensure we open the test file, not the production wallet file.
       uut.WALLET_FILE = testWalletFile
@@ -59,6 +58,33 @@ describe('#wallet', () => {
       assert.property(result, 'slpAddress')
       assert.property(result, 'legacyAddress')
       assert.property(result, 'hdPath')
+      assert.isTrue(writeJsonFunction.calledOnce)
+
+      const args = writeJsonFunction.args[0]
+      assert.equal(args[1], testWalletFile)
+    })
+
+    it('should create a new avax wallet if file does not exist', async () => {
+      // Mock dependencies
+      uut.BchWallet = AvalancheWallet
+      const writeJsonFunction = sandbox.spy(uut.jsonFiles, 'writeJSON')
+
+      // Ensure we open the test file, not the production wallet file.
+      uut.AVAX_WALLET_FILE = testAvaxWalletFile
+
+      const result = await uut.openWallet(true)
+      // console.log('result: ', result)
+
+      assert.property(result, 'type')
+      assert.property(result, 'mnemonic')
+      assert.property(result, 'address')
+      assert.property(result, 'privateKey')
+      assert.property(result, 'publicKey')
+      assert.property(result, 'avax')
+      assert.isTrue(writeJsonFunction.calledOnce)
+
+      const args = writeJsonFunction.args[0]
+      assert.equal(args[1], testAvaxWalletFile)
     })
 
     it('should open existing wallet file', async () => {
@@ -80,11 +106,28 @@ describe('#wallet', () => {
       assert.property(result, 'hdPath')
     })
 
+    it('should open existing avax wallet file', async () => {
+      // This test case uses the file created in the previous test case.
+
+      // Ensure we open the test file, not the production wallet file.
+      uut.AVAX_WALLET_FILE = testAvaxWalletFile
+
+      const result = await uut.openWallet(true)
+      // console.log('result: ', result)
+
+      assert.property(result, 'type')
+      assert.property(result, 'mnemonic')
+      assert.property(result, 'address')
+      assert.property(result, 'privateKey')
+      assert.property(result, 'publicKey')
+      assert.property(result, 'avax')
+    })
+
     it('should catch and throw an error', async () => {
       try {
         // Force an error
         uut.WALLET_FILE = ''
-        uut.BchWallet = () => {}
+        uut.BchWallet = () => { }
 
         await uut.openWallet()
         // console.log('result: ', result)
@@ -125,6 +168,33 @@ describe('#wallet', () => {
       } catch (err) {
         // console.log('err: ', err)
         assert.include(err.message, 'Cannot read property')
+      }
+    })
+  })
+
+  describe('#instanceAvaxWallet', () => {
+    it('should create an instance of AvaxWallet', async () => {
+      // Mock dependencies
+      uut.AvaxWallet = AvalancheWallet
+
+      // Ensure we open the test file, not the production wallet file.
+      uut.AVAX_WALLET_FILE = testAvaxWalletFile
+
+      const walletData = await uut.openWallet(true)
+
+      const result = await uut.instanceAvaxWallet(walletData)
+
+      assert.equal(result, true)
+    })
+
+    it('should catch and throw an error', async () => {
+      try {
+        await uut.instanceAvaxWallet()
+
+        assert.fail('Unexpected code path')
+      } catch (err) {
+        // console.log('err: ', err)
+        assert.include(err.message, 'walletData must be an object with the wallet information')
       }
     })
   })
@@ -208,7 +278,19 @@ describe('#wallet', () => {
 
       const result = await uut.incrementNextAddress()
 
-      assert.equal(result, 2)
+      assert.equal(result, 1)
+    })
+
+    it('should increment the nextAddress property in the avax wallet', async () => {
+      // Ensure we open the test file, not the production wallet file.
+      uut.AVAX_WALLET_FILE = testAvaxWalletFile
+
+      // mock instance of minimal-slp-wallet
+      uut.avaxWallet = new AvalancheWallet()
+
+      const result = await uut.incrementNextAddress(true)
+
+      assert.equal(result, 1)
     })
 
     it('should catch and throw an error', async () => {
@@ -310,13 +392,67 @@ describe('#wallet', () => {
       }
     })
   })
+
+  describe('#createPartialTxHex', () => {
+    it('should return a partial transaction with a different address', async () => {
+      // mock instance of minimal-avax-wallet
+      uut.avaxWallet = new AvalancheWallet()
+
+      const result = await uut.createPartialTxHex(10000, uut.avaxWallet.walletInfo.privateKey)
+
+      assert.hasAllKeys(result, ['txHex', 'addrReferences'])
+      assert.equal(
+        result.txHex,
+        '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0' +
+        '000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000' +
+        '000070000000000002710000000000000000000000001000000012a911a32b2dcfa390b020' +
+        'b406131df356b84a2a100000001db20a53856ff6c6a1ea2721ac5c007698f9e5dba157a3f1' +
+        '4aac0a26521f112a200000002f808d594b0360d20f7b4214bdb51a773d0f5eb34c5157eea2' +
+        '85fefa5a86f5e16000000050000000000013043000000010000000000000000'
+      )
+      assert.equal(result.addrReferences, '{"2fWKUBaTWfrbs5uHJvnFzyLsBg3b7yNkWHFYWrdGJYHCRwa3ww":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
+    })
+
+    it('should handle an throw error', async () => {
+      // mock instance of minimal-avax-wallet
+      uut.avaxWallet = new AvalancheWallet()
+      uut.avaxWallet.utxos.utxoStore = []
+      try {
+        await uut.createPartialTxHex(10000)
+        assert.fail('unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'Cannot read property')
+      }
+    })
+
+    it('should return a partial transaction as hex string and the address reference', async () => {
+      // mock instance of minimal-avax-wallet
+      uut.avaxWallet = new AvalancheWallet()
+
+      const result = await uut.createPartialTxHex(10000)
+
+      assert.hasAllKeys(result, ['txHex', 'addrReferences'])
+      assert.equal(
+        result.txHex,
+        '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b000' +
+        '0000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000' +
+        '70000000000002710000000000000000000000001000000012a911a32b2dcfa390b020b40613' +
+        '1df356b84a2a1000000010552889bec3957677061bae1c8a57966895fce73bd3e2c66efd53d9' +
+        '81b9b5fa000000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d5' +
+        '7c645000000050000000000000001000000010000000000000000'
+      )
+      assert.equal(result.addrReferences, '{"3LxJXtS6FYkSpcRLPu1EeGZDdFBY41J4YxH1Nwohxs2cj8svY":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
+    })
+  })
 })
 
-const deleteFile = (filepath) => {
-  try {
-    // Delete state if exist
-    fs.unlinkSync(filepath)
-  } catch (err) {
-    // console.error('Error trying to delete file: ', err)
+const deleteFiles = (filepaths) => {
+  for (const path of filepaths) {
+    try {
+      // Delete state if exist
+      fs.unlinkSync(path)
+    } catch (err) {
+      // console.error('Error trying to delete file: ', err)
+    }
   }
 }

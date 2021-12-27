@@ -13,7 +13,7 @@ const ipfs = {
     ipfsCoord: {
       useCases: {
         peer: {
-          sendPrivateMessage: () => {}
+          sendPrivateMessage: () => { }
         }
       }
     }
@@ -22,8 +22,8 @@ const ipfs = {
 
 const localdb = {
   Users: class Users {
-    static findById () {}
-    static find () {}
+    static findById () { }
+    static find () { }
     static findOne () {
       return {
         validatePassword: localdb.validatePassword
@@ -56,8 +56,8 @@ const localdb = {
   },
 
   Entry: class Entry {
-    constructor (obj) {
-      ;(this._id = 'id'), (this.entry = obj.entry)
+    constructor(obj) {
+      ; (this._id = 'id'), (this.entry = obj.entry)
       this.slpAddress = obj.slpAddress
       this.description = obj.description
       this.signature = obj.signature
@@ -66,9 +66,9 @@ const localdb = {
       this.merit = obj.merit
     }
 
-    static findById () {}
-    static find () {}
-    static findOne () {}
+    static findById () { }
+    static find () { }
+    static findOne () { }
 
     async save () {
       return {}
@@ -76,11 +76,11 @@ const localdb = {
   },
 
   Order: class Order {
-    constructor (obj) {}
+    constructor(obj) { }
 
-    static findById () {}
-    static find () {}
-    static findOne () {}
+    static findById () { }
+    static find () { }
+    static findOne () { }
 
     async save () {
       return {}
@@ -104,25 +104,30 @@ const bch = {
 //   burnPsf: async () => {},
 //   generateSignature: async () => {}
 // }
-const { MockBchWallet, AvalancheWallet} = require('./wallet')
+const { MockBchWallet, AvalancheWallet } = require('./wallet')
+const { Write } = require('./p2wdb-mock')
 const wallet = {
-  burnPsf: async () => {},
-  generateSignature: async () => {},
+  burnPsf: async () => { },
+  generateSignature: async () => { },
   getKeyPair: async () => {
     return { cashAddress: 'fakeAddr', wif: 'fakeWif', hdIndex: 1 }
   },
-  getAvaxKeyPair: async() => {
+  getAvaxKeyPair: async (index) => {
     return {
       getAddressString: () => 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd',
       getPrivateKeyString: () => 'PrivateKey-8NFb6YinvHtjtfHW3JRm3qoDdQceXEuTRcLRvj3BAxNg3dX7y',
       getPublicKeyString: () => '5iwDpFGJdZXwhNjhC8VinAHT3T7ny3HiYLN2mdJUqK9Z2gorQj',
+      hdIndex: index
     }
   },
-  bchWallet: new MockBchWallet()
+  createPartialTxHex: () => {},
+  bchWallet: new MockBchWallet(),
+  avaxWallet: new AvalancheWallet()
 }
 
 const p2wdb = {
-  write: async () => {}
+  checkForSufficientFunds: async () => true,
+  write: async () => { hash: 'testhash' },
 }
 
 module.exports = { ipfs, localdb, bch, wallet, p2wdb, bchjs }

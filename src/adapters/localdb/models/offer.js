@@ -15,7 +15,11 @@ const Offer = new mongoose.Schema({
   utxoVout: { type: Number },
   numTokens: { type: Number },
 
-  //
+  txHex: { type: String }, // hex of partial transaction.
+  addrReferences: { type: String }, // Metadata needed when passing AVAX partial TXs.
+  hdIndex: { type: Number }, // HD index address holding the UTXO for this offer.
+
+  // Tracks ipfs-coord node that is managing this offer.
   offerIpfsId: { type: String },
   offerBchAddr: { type: String },
   offerPubKey: { type: String }
