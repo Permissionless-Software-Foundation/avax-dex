@@ -10,7 +10,13 @@ const fs = require('fs')
 
 // Local libraries.
 const WalletAdapter = require('../../../src/adapters/wallet')
-const { MockBchWallet, AvalancheWallet } = require('../mocks/adapters/wallet')
+const {
+  MockBchWallet,
+  AvalancheWallet,
+  txString,
+  emptyUTXOSet,
+  assetUTXOSet
+} = require('../mocks/adapters/wallet')
 
 // Global constants
 const testWalletFile = `${__dirname.toString()}/test-wallet.json`
@@ -442,6 +448,106 @@ describe('#wallet', () => {
         '7c645000000050000000000000001000000010000000000000000'
       )
       assert.equal(result.addrReferences, '{"3LxJXtS6FYkSpcRLPu1EeGZDdFBY41J4YxH1Nwohxs2cj8svY":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
+    })
+  })
+
+  describe('#getTransaction', () => {
+    it('should return a avm.Tx item', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+
+      const result = await uut.getTransaction('txid')
+
+      assert.equal(result.getTypeName(), 'Tx')
+    })
+
+    it('should throw an error if the txid is not provided', async () => {
+      try {
+        await uut.getTransaction()
+        assert.fail('unexpected result')
+      } catch (error) {
+        assert.include(error.message, 'txid must be a valid b58 string')
+      }
+    })
+  })
+
+  describe('#getTxOut', () => {
+    it('should return "unspend" if the utxo hasnt been spent', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getUTXOs').resolves({ utxos: assetUTXOSet })
+
+      const result = await uut.getTxOut('23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK', 1)
+      assert.hasAllKeys(result, ['asset', 'amount', 'address', 'status'])
+    })
+
+    it('should return null if the utxo was spent', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getUTXOs').resolves({ utxos: emptyUTXOSet })
+
+      const result = await uut.getTxOut('23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK', 1)
+
+      assert.isTrue(!result)
+    })
+
+    it('should throw an error and catch an error', async () => {
+      try {
+        await uut.getTxOut()
+        assert.fail('unexpected result')
+      } catch (error) {
+        assert.include(error.message, 'txid must be a valid b58 string')
+      }
+    })
+  })
+
+  describe('#findTxOut', () => {
+    it('should return the utxo and the vout if any matches the criteria', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      const result = await uut.findTxOut('txid', {
+        address: 'X-avax1rjhc87za0j996nh6lxvgw4w72rp42jl67t7mln',
+        amount: 500,
+        assetID: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si'
+      })
+
+      assert.hasAllKeys(result, ['utxo', 'vout'])
+      assert.equal(result.vout, 2)
+      assert.equal(result.utxo.getTypeName(), 'TransferableOutput')
+    })
+
+    it('should return null if there is not an output that matches the criteria', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      const result = await uut.findTxOut('txid', {
+        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'
+      })
+
+      assert.equal(result, null)
+    })
+
+    it('should return the last utxo if the criteria is an empty object', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      const result = await uut.findTxOut('txid')
+
+      assert.hasAllKeys(result, ['utxo', 'vout'])
+      assert.equal(result.vout, 2)
+      assert.equal(result.utxo.getTypeName(), 'TransferableOutput')
+    })
+
+    it('should throw an error and catch an error', async () => {
+      try {
+        await uut.findTxOut()
+        assert.fail('unexpected result')
+      } catch (error) {
+        assert.include(error.message, 'txid must be a valid b58 string')
+      }
     })
   })
 })

@@ -38,12 +38,10 @@ class OrderUseCases {
       // order.
       const txid = orderObj.data.utxoTxid
       const vout = orderObj.data.utxoVout
-      const utxoStatus = await this.adapters.bchjs.Blockchain.getTxOut(
-        txid,
-        vout
-      )
+
+      const utxoStatus = await this.adapters.wallet.getTxOut(txid, vout)
       console.log('utxoStatus: ', utxoStatus)
-      if (utxoStatus === null) return false
+      if (!utxoStatus) return false
 
       const orderEntity = this.orderEntity.validate(orderObj)
       console.log('orderEntity: ', orderEntity)

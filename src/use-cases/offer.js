@@ -53,7 +53,7 @@ class OfferLib {
 
       // Update the offer with the new UTXO information and the partialTx information.
       offerEntity.utxoTxid = utxoInfo.txid
-      offerEntity.utxoVout = utxoInfo.outputIdx
+      offerEntity.utxoVout = utxoInfo.vout
       offerEntity.txHex = partialTx.txHex
       offerEntity.addrReferences = partialTx.addrReferences
       offerEntity.hdIndex = 3
@@ -101,12 +101,9 @@ class OfferLib {
 
       const txid = await this.adapters.wallet.avaxWallet.send([receiver])
 
-      const utxoInfo = {
-        txid,
-        vout: '00000000' // equivalent to vout 0
-      }
+      const { vout } = await this.adapters.wallet.findTxOut(txid, receiver)
 
-      return utxoInfo
+      return { txid, vout }
     } catch (err) {
       console.error('Error in moveTokens(): ', err)
       throw err

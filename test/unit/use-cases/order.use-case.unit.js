@@ -53,15 +53,13 @@ describe('#order-use-case', () => {
         data: {
           messageType: 1,
           messageClass: 1,
-          tokenId:
-            '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0',
+          tokenId: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
           buyOrSell: 'sell',
           rateInSats: 1000,
           minSatsToExchange: 10,
           numTokens: 0.02,
-          utxoTxid:
-            '241c06bf61384b8623477e419bf4779edbcc7e3bc862f0f179a9ed2967069b87',
-          utxoVout: 0
+          utxoTxid: '23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK',
+          utxoVout: 1
         },
         timestamp: '2021-09-20T17:54:26.395Z',
         localTimeStamp: '9/20/2021, 10:54:26 AM',
@@ -84,15 +82,13 @@ describe('#order-use-case', () => {
         data: {
           messageType: 1,
           messageClass: 1,
-          tokenId:
-            '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0',
+          tokenId: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
           buyOrSell: 'sell',
           rateInSats: 1000,
           minSatsToExchange: 10,
           numTokens: 0.02,
-          utxoTxid:
-            '241c06bf61384b8623477e419bf4779edbcc7e3bc862f0f179a9ed2967069b87',
-          utxoVout: 0
+          utxoTxid: '23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK',
+          utxoVout: 1
         },
         timestamp: '2021-09-20T17:54:26.395Z',
         localTimeStamp: '9/20/2021, 10:54:26 AM',
@@ -101,17 +97,11 @@ describe('#order-use-case', () => {
       }
 
       // Mock dependencies
-      sandbox.stub(uut.adapters.bchjs.Blockchain, 'getTxOut').resolves({
-        bestblock:
-          '000000000000000000d2060b83f90f8187b92fcccb4a42aaa19ce5a305fe0ae3',
-        confirmations: 0,
-        value: 0,
-        scriptPubKey: {
-          asm: 'OP_RETURN 5262419 1 1145980243 38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0 00000000001e8480 0000000009a7ec80',
-          hex: '6a04534c500001010453454e442038e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b00800000000001e8480080000000009a7ec80',
-          type: 'nulldata'
-        },
-        coinbase: false
+      sandbox.stub(uut.adapters.wallet, 'getTxOut').resolves({
+        asset: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
+        amount: 100,
+        address: 'X-avax1l9g0vqng5jkd8xupdn8nshhlhcdm6nszkqw7zh',
+        status: 'unspent'
       })
 
       const result = await uut.createOrder(orderObj)
