@@ -11,7 +11,7 @@ let sandbox
 let uut
 
 describe('#Order-Entity', () => {
-  before(async () => {})
+  before(async () => { })
 
   beforeEach(() => {
     uut = new Order()
@@ -189,6 +189,57 @@ describe('#Order-Entity', () => {
       }
     })
 
+    it('should throw an error if txHex is not included', () => {
+      try {
+        const orderData = {
+          data: {
+            messageType: 1,
+            messageClass: 1,
+            tokenId: 'fakeId',
+            buyOrSell: 'buy',
+            rateInSats: 1000,
+            minSatsToExchange: 350,
+            numTokens: 1,
+            utxoTxid: 'fakeTxid',
+            utxoVout: 0
+          }
+        }
+        uut.validate(orderData)
+      } catch (err) {
+        // console.log(err)
+        assert.include(
+          err.message,
+          "Property 'txHex' must be a valid hex string"
+        )
+      }
+    })
+
+    it('should throw an error if addrReferences is not included', () => {
+      try {
+        const orderData = {
+          data: {
+            messageType: 1,
+            messageClass: 1,
+            tokenId: 'fakeId',
+            buyOrSell: 'buy',
+            rateInSats: 1000,
+            minSatsToExchange: 350,
+            numTokens: 1,
+            utxoTxid: 'fakeTxid',
+            utxoVout: 0,
+            txHex: 'fakeHex'
+          }
+        }
+        uut.validate(orderData)
+      } catch (err) {
+        // console.log(err)
+        assert.include(
+          err.message,
+          "Property 'addrReferences' must be a string"
+        )
+      }
+    })
+
     it('should validate a new order', () => {
       const orderObj = {
         appId: 'swapTest555',
@@ -203,7 +254,9 @@ describe('#Order-Entity', () => {
           numTokens: 0.02,
           utxoTxid:
             '241c06bf61384b8623477e419bf4779edbcc7e3bc862f0f179a9ed2967069b87',
-          utxoVout: 0
+          utxoVout: 0,
+          txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b000',
+          addrReferences: '{"23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa493fANVn":"X-avax1swa5l9h5cax8jwne2usxp88rwnr4n7t699hj0g"}'
         },
         timestamp: '2021-09-20T17:54:26.395Z',
         localTimeStamp: '9/20/2021, 10:54:26 AM',
