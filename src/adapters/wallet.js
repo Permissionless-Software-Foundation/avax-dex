@@ -361,7 +361,7 @@ class WalletAdapter {
     }
   }
 
-  // fetch a transcation info an returns it as a avm.Tx object
+  // Fetch a transcation data and return it as an avm.Tx object.
   async getTransaction (txid) {
     try {
       if (typeof txid !== 'string' || !txid) {
@@ -452,12 +452,16 @@ class WalletAdapter {
 
       // identify the output
       const offerOut = outs[vout]
-      const address = xchain.addressFromBuffer(offerOut.getOutput().getAddress(0))
+      const address = xchain.addressFromBuffer(
+        offerOut.getOutput().getAddress(0)
+      )
 
       const txidBuffer = bintools.cb58Decode(txid)
       const voutHex = `${vout}`.padStart(8, '0')
       const voutBuffer = Buffer.from(voutHex, 'hex')
-      const utxoid = bintools.bufferToB58(Buffer.concat([txidBuffer, voutBuffer]))
+      const utxoid = bintools.bufferToB58(
+        Buffer.concat([txidBuffer, voutBuffer])
+      )
 
       // check if the receiver still holds the utxo
       const { utxos: utxosSet } = await xchain.getUTXOs(address)

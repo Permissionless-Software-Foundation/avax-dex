@@ -21,8 +21,8 @@ class OrderEntity {
       minSatsToExchange,
       numTokens,
       utxoTxid,
-      txHex,
-      addrReferences,
+      txHex, // Hex serialized transaction.
+      addrReferences, // Addresses that control UTXOs used in transaction.
       utxoVout
     } = orderData.data
 
@@ -43,7 +43,9 @@ class OrderEntity {
       throw new Error("Property 'rateInSats' must be an integer number.")
     }
     if (!minSatsToExchange || typeof minSatsToExchange !== 'number') {
-      throw new Error("Property 'minSatsToExchange' must be an integer number.")
+      throw new Error(
+        "Property 'minSatsToExchange' must be an integer number."
+      )
     }
     if (!numTokens || typeof numTokens !== 'number') {
       throw new Error("Property 'numTokens' must be a number.")

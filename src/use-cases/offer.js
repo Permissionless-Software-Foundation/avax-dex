@@ -99,8 +99,13 @@ class OfferLib {
         assetID: offerEntity.tokenId
       }
 
+      // Broadcast the transaction to move the tokens.
       const txid = await this.adapters.wallet.avaxWallet.send([receiver])
 
+      // Wait a few seconds for the network to update its UTXO state.
+      await this.adapters.wallet.bchWallet.bchjs.Util.sleep(3000)
+
+      // Find the vout for the transaction.
       const { vout } = await this.adapters.wallet.findTxOut(txid, receiver)
 
       return { txid, vout }
