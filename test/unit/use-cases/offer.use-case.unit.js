@@ -166,6 +166,7 @@ describe('#offer-use-case', () => {
       const walletInfo = await uut.getAddress(1)
 
       sandbox.stub(uut.adapters.wallet.avaxWallet, 'send').resolves('fakeTxid')
+      sandbox.stub(uut.adapters.wallet, 'findTxOut').resolves({ vout: 1 })
 
       const result = await uut.moveTokens(offerEntity, walletInfo)
       // console.log('result: ', result)
@@ -174,7 +175,7 @@ describe('#offer-use-case', () => {
       assert.property(result, 'vout')
 
       assert.equal(result.txid, 'fakeTxid')
-      assert.equal(result.vout, 0)
+      assert.equal(result.vout, 1)
     })
 
     it('should catch an error', async () => {

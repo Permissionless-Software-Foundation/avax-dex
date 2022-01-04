@@ -20,7 +20,7 @@ const mockWallet = {
 }
 
 class MockBchWallet {
-  constructor() {
+  constructor () {
     this.walletInfoPromise = true
     this.walletInfo = mockWallet
     this.bchjs = new BCHJS()
@@ -254,4 +254,33 @@ class AvalancheWallet {
   }
 }
 
-module.exports = { MockBchWallet, mockWallet, AvalancheWallet }
+// UTXOS and UTXOSets
+const emptyUTXOSet = {
+  getUTXO: () => null
+}
+const assetUTXOSet = {
+  getUTXO: () => true
+}
+
+const txString = '111111111GYfFgEkzZP3Csh3c5srhDny6S23q96YQvnKPzg4DmyzVdw9hKQhsttPmn237U' +
+  'JdFPFPvfTpN2v8HoKP3TUTRiPmGvvjXn9E9fqV3v9NVPa4ce4spCgS8L8AmG5t2wbhn9Js' +
+  'gui2Z6mdXf7ftP7c8grp2qjd6v5rKyQn6V5FtRpNRMvGGpYK5VZb5XsHcgwaGVBp4htSCP' +
+  'iiahCnuePHzRdjz6dtzjUJtZMueAwHPMjxJRzw2oE7eTdPWy4Ln6XKXrWGQqzXM3oGg8s3' +
+  'k22d2JwKdpEKL3Wb5yGSft72iBbsRgRHE29kNGUirBAqpMzURQCRAdgUAVqxzP3TzyfX6q' +
+  'UvTTdbFzX82kLk76jUh9KCBa8zrFzH5jvJWAzaV4rkEuMKASFxqPYyrKJ6SQYWBgdDdQFM' +
+  'C7DeD3R9TEM7fLfqWywe2GMmH24mYKYG1sKokqjoyUdL3moTbzfdUwY1kpNMH23jSLBu5e' +
+  'vzyvNrFQ9MLG1bYFaHzf6z2M6KtV4kyhk6dXgDktBECxXzkEZq4WEBrtVexoCVaqJfSzE1' +
+  'gmXCs3Ym9D9Y2rc1oA8tn9QneZUvdJQmWZ7Ce58ZtJnFZQ9ZAaymPy2qgsLbdE9pQhKNBS' +
+  'rVriCdvWqokTGL4a5PiNrCBmqCsrg78DLNGyJZ97cdboUwQQ54RE67x2TBNfufUfo4wS7h' +
+  'uKYi1MCbjcKbowsRBKMoWDWhyK4Lk7gVC8W8Ncx9ecc3W6bUuewErdmaaRAUtQtismxucz' +
+  '8wZbWe8PmGxEUTruPzo8nVpz4CXniE1FG342t8ey6YHUqBUHqpeHsGbWMc9rQyFHUV8joF' +
+  '3Nchxt2s'
+
+module.exports = {
+  MockBchWallet,
+  mockWallet,
+  AvalancheWallet,
+  txString,
+  emptyUTXOSet,
+  assetUTXOSet
+}

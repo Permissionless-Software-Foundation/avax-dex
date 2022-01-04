@@ -21,6 +21,8 @@ class OrderEntity {
       minSatsToExchange,
       numTokens,
       utxoTxid,
+      txHex, // Hex serialized transaction.
+      addrReferences, // Addresses that control UTXOs used in transaction.
       utxoVout
     } = orderData.data
 
@@ -41,7 +43,9 @@ class OrderEntity {
       throw new Error("Property 'rateInSats' must be an integer number.")
     }
     if (!minSatsToExchange || typeof minSatsToExchange !== 'number') {
-      throw new Error("Property 'minSatsToExchange' must be an integer number.")
+      throw new Error(
+        "Property 'minSatsToExchange' must be an integer number."
+      )
     }
     if (!numTokens || typeof numTokens !== 'number') {
       throw new Error("Property 'numTokens' must be a number.")
@@ -51,6 +55,12 @@ class OrderEntity {
     }
     if (typeof utxoVout !== 'number') {
       throw new Error("Property 'utxoVout' must be an integer number.")
+    }
+    if (typeof txHex !== 'string') {
+      throw new Error("Property 'txHex' must be a valid hex string")
+    }
+    if (typeof addrReferences !== 'string') {
+      throw new Error("Property 'addrReferences' must be a string")
     }
 
     const validatedOrderData = {
@@ -63,6 +73,8 @@ class OrderEntity {
       numTokens,
       utxoTxid,
       utxoVout,
+      txHex,
+      addrReferences,
       timestamp: orderData.timestamp,
       localTimestamp: orderData.localTimeStamp,
       txid: orderData.txid,

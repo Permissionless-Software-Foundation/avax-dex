@@ -7,7 +7,7 @@ const axios = require('axios')
 const { Write } = require('p2wdb/index')
 
 // Global constants
-const P2WDB_SERVER = 'http://localhost:5001/entry/write'
+const P2WDB_SERVER = 'http://localhost:5010'
 // const P2WDB_SERVER = 'https://p2wdb.fullstack.cash/entry/write'
 
 class P2wdbAdapter {
@@ -16,6 +16,7 @@ class P2wdbAdapter {
     this.axios = axios
     this.Write = Write
     this.bchjs = localConfig.bchjs || {}
+    this.p2wdbURL = localConfig.p2wdbURL || P2WDB_SERVER
   }
 
   async checkForSufficientFunds (wif) {
@@ -41,13 +42,10 @@ class P2wdbAdapter {
       const { appId, data, wif } = inputObj
       const p2write = new this.Write({
         wif,
+        serverURL: this.p2wdbURL,
         restURL: this.bchjs.restURL,
         apiToken: this.bchjs.apiToken
       })
-
-      // TODO: update the p2wdb to accept custom servers
-      // meanwhite this trick works
-      p2write.axios = this.axiosClient()
 
       // TODO: Input validation
 
@@ -57,16 +55,6 @@ class P2wdbAdapter {
       console.error('Error in p2wdb.js/write()')
       throw err
     }
-  }
-
-  axiosClient () {
-    const client = axios.create()
-    client.post = async (url, data) => {
-      console.log(`Changed ${url} for ${P2WDB_SERVER}`)
-      return this.axios.post(P2WDB_SERVER, data)
-    }
-
-    return client
   }
 }
 

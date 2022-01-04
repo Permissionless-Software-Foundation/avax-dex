@@ -360,6 +360,131 @@ class WalletAdapter {
       throw err
     }
   }
+
+  // Fetch a transcation data and return it as an avm.Tx object.
+  async getTransaction (txid) {
+    try {
+      if (typeof txid !== 'string' || !txid) {
+        throw new Error('txid must be a valid b58 string')
+      }
+
+      const avalance = this.avaxWallet.ava
+      const avm = this.avaxWallet.utxos.avm
+      new avm.UTXOSet().add()
+      const xchain = avalance.XChain()
+
+      // fetch the transaction info
+      const txString = await xchain.getTx(txid)
+      const tx = new avm.Tx()
+      tx.fromString(txString)
+
+      return tx
+    } catch (error) {
+      console.error('Error in getTransaction()')
+      throw error
+    }
+  }
+
+  // returns the output that matches the critetia
+  // Expects:
+  //   txid: '23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK',
+  //   criteria: {
+  //     address: 'X-avax1',
+  //     amount: 1000,
+  //     assetID: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si'
+  //   }
+  async findTxOut (txid, criteria = {}) {
+    try {
+      const tx = await this.getTransaction(txid)
+      const xchain = this.avaxWallet.ava.XChain()
+      const bintools = this.avaxWallet.bintools
+
+      const basetx = tx.getUnsignedTx().getTransaction()
+      const outs = basetx.getOuts()
+
+      let utxo
+      let vout
+
+      for (let i = 0; i < outs.length; i++) {
+        const txOut = outs[i]
+        const thisOut = txOut.getOutput()
+
+        const addresses = thisOut.getAddresses().map(xchain.addressFromBuffer)
+
+        if (criteria.address && !addresses.includes(criteria.address)) {
+          continue
+        }
+
+        const amount = thisOut.getAmount().toNumber()
+        if (criteria.amount && amount !== criteria.amount) {
+          continue
+        }
+
+        const assetID = bintools.cb58Encode(txOut.getAssetID())
+        if (criteria.assetID && assetID !== criteria.assetID) {
+          continue
+        }
+
+        utxo = txOut
+        vout = i
+      }
+
+      if (!utxo) {
+        return null
+      }
+
+      return { utxo, vout }
+    } catch (error) {
+      console.error('Error in findTxOut(): ', error)
+      throw error
+    }
+  }
+
+  // Checks if the given output of a trasaction has been already consumed by the receiver
+  async getTxOut (txid, vout) {
+    try {
+      const tx = await this.getTransaction(txid)
+      const bintools = this.avaxWallet.bintools
+      const xchain = this.avaxWallet.ava.XChain()
+
+      const basetx = tx.getUnsignedTx().getTransaction()
+      const outs = basetx.getOuts()
+
+      // identify the output
+      const offerOut = outs[vout]
+      const address = xchain.addressFromBuffer(
+        offerOut.getOutput().getAddress(0)
+      )
+
+      const txidBuffer = bintools.cb58Decode(txid)
+      const voutHex = `${vout}`.padStart(8, '0')
+      const voutBuffer = Buffer.from(voutHex, 'hex')
+      const utxoid = bintools.bufferToB58(
+        Buffer.concat([txidBuffer, voutBuffer])
+      )
+
+      // check if the receiver still holds the utxo
+      const { utxos: utxosSet } = await xchain.getUTXOs(address)
+      const utxo = utxosSet.getUTXO(utxoid)
+
+      if (!utxo) {
+        return null
+      }
+
+      const formated = {}
+      formated.asset = bintools.cb58Encode(offerOut.getAssetID())
+      formated.amount = offerOut
+        .getOutput()
+        .getAmount()
+        .toNumber()
+      formated.address = address
+      formated.status = 'unspent'
+      return formated
+    } catch (error) {
+      console.error('Error in getTxOutStatus(): ', error)
+      throw error
+    }
+  }
 }
 
 module.exports = WalletAdapter

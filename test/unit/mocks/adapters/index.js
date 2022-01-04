@@ -121,6 +121,8 @@ const wallet = {
     }
   },
   createPartialTxHex: () => {},
+  getTxOut: () => {},
+  findTxOut: () => {},
   bchWallet: new MockBchWallet(),
   avaxWallet: new AvalancheWallet()
 }
