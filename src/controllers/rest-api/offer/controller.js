@@ -47,6 +47,7 @@ class OfferRESTControllerLib {
     }
   }
 
+  // curl -X GET http://localhost:5700/offer/list
   async listOffers (ctx) {
     try {
       const offers = await _this.useCases.offer.listOffers()

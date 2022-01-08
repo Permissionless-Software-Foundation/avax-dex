@@ -50,6 +50,7 @@ class OrderRESTControllerLib {
     }
   }
 
+  // curl -X GET http://localhost:5700/order/list
   async listOrders (ctx) {
     try {
       const orders = await _this.useCases.order.listOrders()
