@@ -409,14 +409,15 @@ describe('#wallet', () => {
       assert.hasAllKeys(result, ['txHex', 'addrReferences'])
       assert.equal(
         result.txHex,
-        '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0' +
-        '000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000' +
-        '000070000000000002710000000000000000000000001000000012a911a32b2dcfa390b020' +
-        'b406131df356b84a2a100000001db20a53856ff6c6a1ea2721ac5c007698f9e5dba157a3f1' +
-        '4aac0a26521f112a200000002f808d594b0360d20f7b4214bdb51a773d0f5eb34c5157eea2' +
-        '85fefa5a86f5e16000000050000000000013043000000010000000000000000'
+        '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
+        '4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
+        '7dff000000070000000000002710000000000000000000000001000000012a911a32b2' +
+        'dcfa390b020b406131df356b84a2a100000001a045bd411acbb02ab31b1ac9a29cbd9e' +
+        '27001d5940a9291fc053d7683e716afc00000002f808d594b0360d20f7b4214bdb51a7' +
+        '73d0f5eb34c5157eea285fefa5a86f5e1600000005000000000001203f000000010000' +
+        '000000000000'
       )
-      assert.equal(result.addrReferences, '{"2fWKUBaTWfrbs5uHJvnFzyLsBg3b7yNkWHFYWrdGJYHCRwa3ww":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
+      assert.equal(result.addrReferences, '{"2Dawk4kFbEj5dmKcaEoZvmTfrWUcUFN22oEwMt1GByqMatzZbP":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
     })
 
     it('should handle an throw error', async () => {

@@ -114,4 +114,52 @@ describe('#order-use-case', () => {
       assert.equal(result, true)
     })
   })
+
+  describe('#listOrders', () => {
+    it('should return a list of offers', async () => {
+      sandbox.stub(uut.OrderModel, 'find').resolves([{
+        _id: '61d8c3b6faabfd0d5f18cae9',
+        messageType: 1,
+        messageClass: 1,
+        tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        buyOrSell: 'sell',
+        rateInSats: '1000',
+        minSatsToExchange: '10',
+        numTokens: 21,
+        utxoTxid: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        utxoVout: 1,
+        timestamp: '',
+        localTimestamp: '',
+        p2wdbHash: 'zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE'
+      }])
+
+      const offers = await uut.listOrders()
+
+      assert.isArray(offers)
+      assert.hasAllKeys(offers[0], [
+        '_id',
+        'messageType',
+        'messageClass',
+        'tokenId',
+        'buyOrSell',
+        'rateInSats',
+        'minSatsToExchange',
+        'numTokens',
+        'utxoTxid',
+        'utxoVout',
+        'timestamp',
+        'localTimestamp',
+        'p2wdbHash'
+      ])
+    })
+
+    it('should throw an error', async () => {
+      try {
+        sandbox.stub(uut.OrderModel, 'find').rejects(new Error('localdb error'))
+        await uut.listOrders()
+      } catch (error) {
+        assert.include(error.message, 'localdb error')
+      }
+    })
+  })
 })

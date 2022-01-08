@@ -13,6 +13,7 @@ const UseCasesMock = require('../../../mocks/use-cases')
 
 const OrderRESTController = require('../../../../../src/controllers/rest-api/order/controller')
 let uut
+/** @type {sinon.SinonSandbox} */
 let sandbox
 let ctx
 
@@ -111,6 +112,46 @@ describe('#Order-REST-Router', () => {
     //     assert.include(err.message, 'test error')
     //   }
     // })
+  })
+
+  describe('#listOrders', () => {
+    it('should run the correct methods', async () => {
+      sandbox.stub(uut.useCases.order, 'listOrders').resolves([{
+        _id: '61d8c3b6faabfd0d5f18cae9',
+        messageType: 1,
+        messageClass: 1,
+        tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        buyOrSell: 'sell',
+        rateInSats: '1000',
+        minSatsToExchange: '10',
+        numTokens: 21,
+        utxoTxid: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        utxoVout: 1,
+        timestamp: '',
+        localTimestamp: '',
+        p2wdbHash: 'zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE'
+      }])
+      const handleErrorSpy = sandbox.spy(uut, 'handleError')
+      const consoleSpy = sandbox.spy(global.console, 'log')
+
+      await uut.listOrders(ctx)
+
+      assert.isTrue(handleErrorSpy.notCalled)
+      assert.isTrue(consoleSpy.notCalled)
+    })
+
+    it('should throw an error', async () => {
+      const handleErrorSpy = sandbox.spy(uut, 'handleError')
+      const consoleSpy = sandbox.spy(global.console, 'log')
+      sandbox.stub(uut.useCases.order, 'listOrders').rejects(new Error('localdb error'))
+
+      try {
+        await uut.listOrders(ctx)
+      } catch (error) {
+        assert.isTrue(handleErrorSpy.calledOnce)
+        assert.isTrue(consoleSpy.calledTwice)
+      }
+    })
   })
 
   describe('#handleError', () => {

@@ -1,5 +1,5 @@
 /*
-  A manual e2e test for creating an swap offer.
+  A manual e2e test for creating a swap offer.
 
   Ensure the REST API is up an running before running this test.
 */

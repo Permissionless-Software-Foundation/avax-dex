@@ -9,11 +9,11 @@ const Offer = new mongoose.Schema({
   buyOrSell: { type: String },
   rateInSats: { type: String },
   minSatsToExchange: { type: String },
-  signature: { type: String },
-  sigMsg: { type: String },
+  numTokens: { type: Number },
+  signature: { type: String }, // this seems to be disposable now
+  sigMsg: { type: String }, // this seems to be disposable now
   utxoTxid: { type: String },
   utxoVout: { type: Number },
-  numTokens: { type: Number },
 
   txHex: { type: String }, // hex of partial transaction.
   addrReferences: { type: String }, // Metadata needed when passing AVAX partial TXs.
@@ -22,7 +22,9 @@ const Offer = new mongoose.Schema({
   // Tracks ipfs-coord node that is managing this offer.
   offerIpfsId: { type: String },
   offerBchAddr: { type: String },
-  offerPubKey: { type: String }
+  offerPubKey: { type: String },
+
+  p2wdbHash: { type: String }
 })
 
 module.exports = mongoose.model('offer', Offer)

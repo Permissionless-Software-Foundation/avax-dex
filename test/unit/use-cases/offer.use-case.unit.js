@@ -229,4 +229,54 @@ describe('#offer-use-case', () => {
       }
     })
   })
+
+  describe('#listOffers', () => {
+    it('should return a list of offers', async () => {
+      sandbox.stub(uut.OfferModel, 'find').resolves([{
+        _id: '61d8c3b6faabfd0d5f18cae7',
+        messageType: 1,
+        messageClass: 1,
+        tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        buyOrSell: 'sell',
+        rateInSats: '1000',
+        minSatsToExchange: '10',
+        numTokens: 21,
+        utxoTxid: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        utxoVout: 1,
+        txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000000003e8000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a100000001a045bd411acbb02ab31b1ac9a29cbd9e27001d5940a9291fc053d7683e716afc00000001f808d594b0360d20f7b4214bdb51a773d0f5eb34c5157eea285fefa5a86f5e16000000050000000000000834000000010000000000000000',
+        addrReferences: '{"2Dawk4kFbEj5dmKcaEoZvmTfrWUcUFN22oEwMt1GByqMatzZbN":"X-avax1n72fnh2y2v56h5k8q08yze63yuykkkmxjqycf3"}',
+        hdIndex: 3,
+        p2wdbHash: 'zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE'
+      }])
+
+      const offers = await uut.listOffers()
+
+      assert.isArray(offers)
+      assert.hasAllKeys(offers[0], [
+        '_id',
+        'messageType',
+        'messageClass',
+        'tokenId',
+        'buyOrSell',
+        'rateInSats',
+        'minSatsToExchange',
+        'numTokens',
+        'utxoTxid',
+        'utxoVout',
+        'txHex',
+        'addrReferences',
+        'hdIndex',
+        'p2wdbHash'
+      ])
+    })
+
+    it('should throw an error', async () => {
+      try {
+        sandbox.stub(uut.OfferModel, 'find').rejects(new Error('localdb error'))
+        await uut.listOffers()
+      } catch (error) {
+        assert.include(error.message, 'localdb error')
+      }
+    })
+  })
 })

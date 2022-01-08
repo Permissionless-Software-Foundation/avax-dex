@@ -50,6 +50,7 @@ class OfferRouter {
 
     // Define the routes and attach the controller.
     this.router.post('/', _this.offerRESTController.createOffer)
+    this.router.get('/list', _this.offerRESTController.listOffers)
 
     // Attach the Controller routes to the Koa app.
     app.use(_this.router.routes())
