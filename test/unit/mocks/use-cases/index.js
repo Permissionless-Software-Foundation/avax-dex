@@ -41,10 +41,16 @@ class Offer {
   async createOffer() {
     return {}
   }
+  async listOffers() {
+    return {}
+  }
 }
 
 class Order {
   async createOrder() {
+    return {}
+  }
+  async listOrders() {
     return {}
   }
 }

@@ -64,6 +64,10 @@ class OfferLib {
         data: offerEntity,
         appId: 'swapTest555'
       })
+
+      offerEntity.p2wdbHash = hash
+      const offerEntry = new this.OfferModel(offerEntity)
+      await offerEntry.save()
       // console.log('hash: ', hash)
 
       // Update the UTXO store in both wallets.
@@ -75,7 +79,7 @@ class OfferLib {
 
       return hash
     } catch (err) {
-      wlogger.error('Error in use-cases/entry.js/createOffer())')
+      wlogger.error('Error in use-cases/createOffer())')
       console.log(err)
       throw err
     }
@@ -158,6 +162,15 @@ class OfferLib {
       }
     } catch (error) {
       console.log(`Error on offer/getAddress(): ${error.message}`)
+      throw error
+    }
+  }
+
+  async listOffers () {
+    try {
+      return this.OfferModel.find()
+    } catch (error) {
+      console.log(`Error on offer/listOffers(): ${error.message}`)
       throw error
     }
   }

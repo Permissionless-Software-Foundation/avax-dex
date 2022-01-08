@@ -7,7 +7,7 @@ const axios = require('axios')
 const { Write } = require('p2wdb/index')
 
 // Global constants
-const P2WDB_SERVER = 'http://localhost:5010'
+const P2WDB_SERVER = 'http://localhost:5001'
 // const P2WDB_SERVER = 'https://p2wdb.fullstack.cash/entry/write'
 
 class P2wdbAdapter {

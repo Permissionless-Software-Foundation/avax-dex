@@ -47,6 +47,17 @@ class OfferRESTControllerLib {
     }
   }
 
+  async listOffers (ctx) {
+    try {
+      const offers = await _this.useCases.offer.listOffers()
+
+      ctx.body = offers
+    } catch (err) {
+      console.log('Error in listOffers REST API handler.')
+      _this.handleError(ctx, err)
+    }
+  }
+
   // DRY error handler
   handleError (ctx, err) {
     console.log('err', err.message)
