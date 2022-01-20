@@ -64,9 +64,11 @@ class OrderUseCases {
     }
   }
 
+  // 'take' an order by completing the second half of the partial transaction.
+  // Write the partially-signed tx to the P2WDB and send a signal to the maker.
   async takeOrder (entryObj) {
     try {
-      console.log('Use Case takeOrder(entryObj):', entryObj)
+      console.log('Use-Case takeOrder(entryObj):', entryObj)
       const { txHex, addrReferences, p2wdbHash, orderStatus } = entryObj
 
       if (orderStatus && orderStatus !== 'posted') {

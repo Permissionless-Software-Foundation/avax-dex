@@ -1,5 +1,7 @@
 /*
-  A manual e2e test for creating a swap offer.
+  A manual e2e test for completing the second part of a three-part trade.
+  Use the list-orders.js script to list available orders. Use this take-order.js
+  script to take the other side of an order.
 
   Ensure the REST API is up an running before running this test.
 */
@@ -14,7 +16,7 @@ async function start () {
       method: 'post',
       url: `${LOCALHOST}/order/take`,
       data: {
-        orderId: '61e90c1295e85a0efb36220b'
+        orderId: '61d9c7bd2aa8708413d826d8'
       }
     }
 
