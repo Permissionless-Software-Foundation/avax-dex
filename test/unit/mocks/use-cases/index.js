@@ -53,6 +53,12 @@ class Order {
   async listOrders() {
     return {}
   }
+  async findOrder() {
+    return {}
+  }
+  async takeOrder() {
+    return {}
+  }
 }
 
 class UseCasesMock {

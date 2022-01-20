@@ -10,21 +10,12 @@ const LOCALHOST = 'http://localhost:5700'
 
 async function start () {
   try {
-    const mockOffer = {
-      lokadId: 'SWP',
-      messageType: 1,
-      messageClass: 1,
-      tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
-      buyOrSell: 'sell',
-      rateInSats: 1000,
-      minSatsToExchange: 10,
-      numTokens: 1
-    }
-
     const options = {
       method: 'post',
-      url: `${LOCALHOST}/offer`,
-      data: { offer: mockOffer }
+      url: `${LOCALHOST}/order/take`,
+      data: {
+        orderId: '61e90c1295e85a0efb36220b'
+      }
     }
 
     const result = await axios(options)

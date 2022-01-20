@@ -62,6 +62,22 @@ class OrderRESTControllerLib {
     }
   }
 
+  async takeOrder (ctx) {
+    try {
+      console.log('body: ', ctx.request.body)
+
+      const orderId = ctx.request.body.orderId
+
+      const orderEntity = await _this.useCases.order.findOrder(orderId)
+      const hash = await _this.useCases.order.takeOrder(orderEntity)
+
+      ctx.body = { hash }
+    } catch (err) {
+      console.log('Error in takeOrder REST API handler.')
+      _this.handleError(ctx, err)
+    }
+  }
+
   // DRY error handler
   handleError (ctx, err) {
     console.log('err', err.message)

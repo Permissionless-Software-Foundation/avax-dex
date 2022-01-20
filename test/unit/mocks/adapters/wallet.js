@@ -133,6 +133,7 @@ class AvalancheWallet {
     this.bintools = avax.bintools
     this.utxos = avax.utxos
     this.sendAvax = avax.sendAvax
+    this.BN = avax.BN
 
     this.walletInfo = {
       type: 'mnemonic',

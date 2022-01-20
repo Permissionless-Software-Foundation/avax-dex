@@ -5,6 +5,8 @@
 // Public npm libraries
 const BchWallet = require('minimal-slp-wallet/index')
 const AvaxWallet = require('minimal-avax-wallet')
+const createHash = require('create-hash')
+const { Signature } = require('avalanche/dist/common/credentials')
 
 // Local libraries
 const JsonFiles = require('./json-files')
@@ -23,6 +25,9 @@ class WalletAdapter {
     this.AVAX_WALLET_FILE = AVAX_WALLET_FILE
     this.BchWallet = BchWallet
     this.AvaxWallet = AvaxWallet
+
+    this.createHash = createHash
+    this.Signature = Signature
   }
 
   // Open the wallet file, or create one if the file doesn't exist.
@@ -277,6 +282,196 @@ class WalletAdapter {
       console.log('error wallet.json/createPartialTxHex():')
       throw error
     }
+  }
+
+  async completePartialTxHex (txHex, addrReferences) {
+    try {
+      const walletData = this.avaxWallet
+      const avaxIdString = walletData.sendAvax.avaxID
+      const avaxID = walletData.bintools.cb58Decode(
+        avaxIdString
+      )
+
+      const asset = walletData.utxos.assets.find(
+        (item) => item.assetID === avaxIdString
+      )
+
+      if (!asset) {
+        throw new Error(
+          "Insufficient funds. You are trying to send AVAX, but the wallet doesn't have any"
+        )
+      }
+
+      // Parse the old transaction
+      console.log(`txHex: ${txHex}`)
+      const baseTx = new walletData.utxos.avm.BaseTx()
+      const txBuffer = Buffer.from(txHex, 'hex')
+      baseTx.fromBuffer(txBuffer)
+
+      const outputs = baseTx.getOuts()
+      const avaxOut = outputs.find((item) => {
+        return item.getAssetID().toString('hex') === avaxID.toString('hex')
+      })
+
+      const fee = walletData.tokens.xchain.getTxFee()
+      const avaxRequired = avaxOut.getOutput().getAmount().add(fee)
+      const avaxUtxo = this.selectUTXO(
+        avaxRequired.toNumber(),
+        walletData.utxos.utxoStore
+      )
+
+      if (!avaxUtxo.amount) {
+        throw new Error('Not enough avax in the selected address')
+      }
+
+      const address = walletData.walletInfo.address
+      const avaxInput = walletData.utxos.encodeUtxo(avaxUtxo, address)
+      const utxoID = avaxInput.getUTXOID()
+      addrReferences[utxoID] = address
+
+      const inputs = baseTx.getIns()
+      const [tokenInput] = inputs
+      const assetID = tokenInput.getAssetID()
+
+      const tokenRemainderOut = outputs.find((item) => {
+        return item.getAssetID().toString('hex') !== avaxID.toString('hex')
+      })
+      let tokenRemainder = new walletData.BN(0)
+      let tokenAmount = new walletData.BN(0)
+      if (tokenRemainderOut) {
+        tokenRemainder = tokenRemainderOut.getOutput().getAmount()
+      }
+
+      for (const input of inputs) {
+        if (input.getAssetID().toString('hex') !== assetID.toString('hex')) {
+          continue
+        }
+
+        tokenAmount = tokenAmount.add(input.getInput().getAmount())
+      }
+      tokenAmount = tokenAmount.sub(tokenRemainder)
+
+      const tokenOutput = walletData.utxos.formatOutput({
+        amount: tokenAmount.toNumber(),
+        address,
+        assetID: walletData.bintools.cb58Encode(assetID)
+      })
+
+      inputs.push(avaxInput)
+      outputs.push(tokenOutput)
+
+      const remainder = new walletData.BN(avaxUtxo.amount).sub(avaxRequired)
+      if (remainder.gt(new walletData.BN(0))) {
+        const remainderOut = walletData.utxos.formatOutput({
+          amount: remainder,
+          address,
+          assetID: avaxIdString
+        })
+
+        outputs.push(remainderOut)
+      }
+
+      const partialTx = new walletData.utxos.avm.BaseTx(
+        walletData.ava.getNetworkID(),
+        walletData.bintools.cb58Decode(
+          walletData.tokens.xchain.getBlockchainID()
+        ),
+        outputs,
+        inputs
+      )
+
+      const keyChain = walletData.tokens.xchain.keyChain()
+      keyChain.importKey(walletData.walletInfo.privateKey)
+
+      const unsigned = new walletData.utxos.avm.UnsignedTx(partialTx)
+
+      const signed = this.partialySignTx(
+        walletData,
+        unsigned,
+        keyChain,
+        addrReferences
+      )
+      const hexString = signed.toBuffer().toString('hex')
+
+      return {
+        txHex: hexString,
+        addrReferences: JSON.stringify(addrReferences)
+      }
+    } catch (err) {
+      console.log('Error in wallet.json/completePartialTxHex()', err)
+      throw err
+    }
+  }
+
+  /**  This method assumes that all the utxos have only one associated address */
+  partialySignTx (walletData, tx, keychain, reference, oldCredentials = []) {
+    const avm = walletData.utxos.avm
+
+    const txBuffer = tx.toBuffer()
+    const msg = Buffer.from(this.createHash('sha256').update(txBuffer).digest())
+    const credentials = [...oldCredentials]
+
+    const inputs = tx.getTransaction().getIns()
+    console.log(' ')
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i]
+      const cred = avm.SelectCredentialClass(
+        input.getInput().getCredentialID()
+      )
+
+      const inputid = input.getUTXOID()
+      try {
+        const source = walletData.tokens.xchain.parseAddress(reference[inputid])
+        const keypair = keychain.getKey(source)
+        const signval = keypair.sign(msg)
+        const sig = new this.Signature()
+        sig.fromBuffer(signval)
+        cred.addSignature(sig)
+
+        console.log(
+          `input ${i}: Successfully signed, ( ${inputid} signed with ${reference[inputid]} )`
+        )
+        credentials[i] = cred
+      } catch (error) {
+        console.log(
+          `input ${i}: Skipping, address is not in the keychain, ( ${inputid} )`
+        )
+
+        if (!credentials[i]) {
+          credentials[i] = cred
+        }
+      }
+    }
+    console.log(' ')
+    return new avm.Tx(tx, credentials)
+  }
+
+  selectUTXO (amount, utxos) {
+    let candidateUTXO = {}
+
+    const total = amount
+    if (!utxos) {
+      utxos = []
+    }
+    for (let i = 0; i < utxos.length; i++) {
+      const thisUTXO = utxos[i]
+
+      console.log(total, thisUTXO.amount)
+      if (thisUTXO.amount < total) {
+        continue
+      }
+
+      if (!candidateUTXO.amount) {
+        candidateUTXO = thisUTXO
+        continue
+      }
+
+      if (candidateUTXO.amount > thisUTXO.amount) {
+        candidateUTXO = thisUTXO
+      }
+    }
+
+    return candidateUTXO
   }
 
   // BCH specific

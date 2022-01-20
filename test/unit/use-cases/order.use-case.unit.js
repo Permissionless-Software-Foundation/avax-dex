@@ -133,10 +133,10 @@ describe('#order-use-case', () => {
         p2wdbHash: 'zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE'
       }])
 
-      const offers = await uut.listOrders()
+      const orders = await uut.listOrders()
 
-      assert.isArray(offers)
-      assert.hasAllKeys(offers[0], [
+      assert.isArray(orders)
+      assert.hasAllKeys(orders[0], [
         '_id',
         'messageType',
         'messageClass',
@@ -159,6 +159,116 @@ describe('#order-use-case', () => {
         await uut.listOrders()
       } catch (error) {
         assert.include(error.message, 'localdb error')
+      }
+    })
+  })
+
+  describe('#findOrder', () => {
+    it('should return an order entity', async () => {
+      const findByIdStub = sandbox.stub(uut.OrderModel, 'findById')
+
+      findByIdStub.resolves({
+        toObject: () => ({
+          _id: '61e90c1295e85a0efb36220b',
+          messageType: 1,
+          messageClass: 1,
+          tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          buyOrSell: 'sell',
+          rateInSats: 1000,
+          minSatsToExchange: 10,
+          numTokens: 1,
+          utxoTxid: 'hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhQzAKMy',
+          utxoVout: 1,
+          timestamp: '2022-01-20T07:15:20.744Z',
+          localTimestamp: '1/20/2022, 3:15:20 AM',
+          p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2',
+          __v: 0,
+          txHex: 'hex',
+          addrReferences: '{}'
+        })
+      })
+
+      const order = await uut.findOrder('61e90c1295e85a0efb36220b')
+
+      assert.hasAllKeys(order, [
+        'messageType',
+        'messageClass',
+        'tokenId',
+        'buyOrSell',
+        'rateInSats',
+        'minSatsToExchange',
+        'numTokens',
+        'utxoTxid',
+        'utxoVout',
+        'orderStatus',
+        'txHex',
+        'addrReferences',
+        'timestamp',
+        'localTimestamp',
+        'txid',
+        'p2wdbHash',
+        'offerHash'
+      ])
+      assert.isTrue(findByIdStub.calledWith('61e90c1295e85a0efb36220b'))
+    })
+
+    it('should throw an error', async () => {
+      const findByIdStub = sandbox.stub(uut.OrderModel, 'findById')
+      findByIdStub.resolves(null)
+      try {
+        await uut.findOrder('61e90c1295e85a0efb36220b')
+        assert.fail('Unexpected code path')
+      } catch (error) {
+        assert.include(error.message, 'order not found')
+      }
+    })
+  })
+
+  describe('#takeOrder', () => {
+    it('should partially sign the transcation and send it to the p2wdb', async () => {
+      const orderEntity = {
+        messageType: 1,
+        messageClass: 1,
+        tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        buyOrSell: 'sell',
+        rateInSats: 1000,
+        minSatsToExchange: 10,
+        numTokens: 1,
+        utxoTxid: 'hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhQzAKMy',
+        utxoVout: 1,
+        orderStatus: 'posted',
+        txHex: 'hex',
+        addrReferences: '{}',
+        timestamp: '2022-01-20T07:15:20.744Z',
+        localTimestamp: undefined,
+        txid: undefined,
+        p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2'
+      }
+
+      const TxStub = sinon.stub(uut.adapters.wallet, 'completePartialTxHex')
+      TxStub.resolves({
+        txHex: 'hex',
+        addrReferences: '{}'
+      })
+
+      const writeStub = sinon.stub(uut.adapters.p2wdb, 'write')
+      writeStub.resolves('somehash')
+
+      const hash = await uut.takeOrder(orderEntity)
+
+      assert.equal(hash, 'somehash')
+      assert.isTrue(TxStub.called)
+      assert.isTrue(writeStub.called)
+    })
+
+    it('should throw an error', async () => {
+      const orderEntity = { orderStatus: 'taken' }
+
+      try {
+        await uut.takeOrder(orderEntity)
+        assert.fail('Unexpected code path')
+      } catch (error) {
+        assert.include(error.message, 'order already taken')
       }
     })
   })
