@@ -64,37 +64,46 @@ class OrderUseCases {
     }
   }
 
+  // 'take' an order by completing the second half of the partial transaction.
+  // Write the partially-signed tx to the P2WDB and send a signal to the maker.
   async takeOrder (entryObj) {
     try {
-      console.log('Use Case takeOrder(entryObj):', entryObj)
+      console.log('Use-Case takeOrder(entryObj):', entryObj)
       const { txHex, addrReferences, p2wdbHash, orderStatus } = entryObj
 
+      // Ensure the order is in a 'posted' state and not already 'taken'
       if (orderStatus && orderStatus !== 'posted') {
         throw new Error('order already taken')
       }
 
+      // Prepare to write to the P2WDB.
       await this.adapters.wallet.bchWallet.walletInfoPromise
       await this.adapters.p2wdb.checkForSufficientFunds(
         this.adapters.wallet.bchWallet.walletInfo.privateKey
       )
 
+      // Complete the partial-transaction, taking the other side of the trade.
       const reference = JSON.parse(addrReferences)
       const partialTx = await this.adapters.wallet.completePartialTxHex(
         txHex,
         reference
       )
 
+      // The P2WDB hash of the 'posted' Order.
       entryObj.offerHash = p2wdbHash
 
+      // Delete properties from the original Order.
       delete entryObj.p2wdbHash
       delete entryObj.timestamp
       delete entryObj.localTimestamp
       delete entryObj.txid
 
+      // Update the state of the Order to reflect that it has been 'taken'.
       entryObj.orderStatus = 'taken'
       entryObj.txHex = partialTx.txHex
       entryObj.addrReferences = partialTx.addrReferences
 
+      // Write the updated order information to the P2WDB.
       const hash = await this.adapters.p2wdb.write({
         wif: this.adapters.wallet.bchWallet.walletInfo.privateKey,
         data: entryObj,

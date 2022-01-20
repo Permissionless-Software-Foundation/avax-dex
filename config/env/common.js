@@ -85,5 +85,12 @@ module.exports = {
 
   debugLevel: process.env.DEBUG_LEVEL ? parseInt(process.env.DEBUG_LEVEL) : 1,
 
-  p2wdbPort: process.env.P2WDB_PORT ? process.env.P2WDB_PORT : 5010
+  p2wdbPort: process.env.P2WDB_PORT ? process.env.P2WDB_PORT : 5010,
+
+  // Settings for production, using external go-ipfs node.
+  isProduction: process.env.SVC_ENV === 'production' ? true : false,
+  ipfsHost: process.env.IPFS_HOST ? process.env.IPFS_HOST : 'localhost',
+  ipfsApiPort: process.env.IPFS_API_PORT
+    ? parseInt(process.env.IPFS_API_PORT)
+    : 5001
 }
