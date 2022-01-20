@@ -133,6 +133,7 @@ const wallet = {
     }
   },
   createPartialTxHex: () => {},
+  completePartialTxHex: () => {},
   getTxOut: () => {},
   findTxOut: () => {},
   bchWallet: new MockBchWallet(),

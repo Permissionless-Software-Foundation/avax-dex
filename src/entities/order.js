@@ -4,6 +4,10 @@
   It's destroyed when the UTXO described in the Signal has been detected as spent.
 */
 class OrderEntity {
+  constructor () {
+    this.orderStatus = ['posted', 'taken', 'completed']
+  }
+
   validate (orderData = {}) {
     // Throw an error if input object does not have a data property
     if (!orderData.data) {
@@ -21,9 +25,11 @@ class OrderEntity {
       minSatsToExchange,
       numTokens,
       utxoTxid,
-      txHex, // Hex serialized transaction.
-      addrReferences, // Addresses that control UTXOs used in transaction.
-      utxoVout
+      utxoVout,
+      offerHash,
+      txHex,
+      addrReferences,
+      orderStatus
     } = orderData.data
 
     // Input Validation
@@ -56,11 +62,9 @@ class OrderEntity {
     if (typeof utxoVout !== 'number') {
       throw new Error("Property 'utxoVout' must be an integer number.")
     }
-    if (typeof txHex !== 'string') {
-      throw new Error("Property 'txHex' must be a valid hex string")
-    }
-    if (typeof addrReferences !== 'string') {
-      throw new Error("Property 'addrReferences' must be a string")
+
+    if (orderStatus && !this.orderStatus.includes(orderStatus)) {
+      throw new Error("Property 'orderStatus' must be a valid string")
     }
 
     const validatedOrderData = {
@@ -73,12 +77,14 @@ class OrderEntity {
       numTokens,
       utxoTxid,
       utxoVout,
+      orderStatus: orderStatus || this.orderStatus[0],
       txHex,
       addrReferences,
       timestamp: orderData.timestamp,
       localTimestamp: orderData.localTimeStamp,
       txid: orderData.txid,
-      p2wdbHash: orderData.hash
+      p2wdbHash: orderData.hash,
+      offerHash: offerHash || orderData.hash
     }
 
     return validatedOrderData

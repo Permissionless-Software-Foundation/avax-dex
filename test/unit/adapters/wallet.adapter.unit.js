@@ -412,12 +412,12 @@ describe('#wallet', () => {
         '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
         '4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
         '7dff000000070000000000002710000000000000000000000001000000012a911a32b2' +
-        'dcfa390b020b406131df356b84a2a100000001a045bd411acbb02ab31b1ac9a29cbd9e' +
-        '27001d5940a9291fc053d7683e716afc00000002f808d594b0360d20f7b4214bdb51a7' +
-        '73d0f5eb34c5157eea285fefa5a86f5e1600000005000000000001203f000000010000' +
+        'dcfa390b020b406131df356b84a2a1000000015bdf7b977813f604ac5c285f4571db90' +
+        '6afdf4e1197e2a39e9284a73976e269100000002f808d594b0360d20f7b4214bdb51a7' +
+        '73d0f5eb34c5157eea285fefa5a86f5e16000000050000000000011d1f000000010000' +
         '000000000000'
       )
-      assert.equal(result.addrReferences, '{"2Dawk4kFbEj5dmKcaEoZvmTfrWUcUFN22oEwMt1GByqMatzZbP":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
+      assert.equal(result.addrReferences, '{"hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhKhuaa5":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
     })
 
     it('should handle an throw error', async () => {
@@ -449,6 +449,63 @@ describe('#wallet', () => {
         '7c645000000050000000000000001000000010000000000000000'
       )
       assert.equal(result.addrReferences, '{"3LxJXtS6FYkSpcRLPu1EeGZDdFBY41J4YxH1Nwohxs2cj8svY":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
+    })
+  })
+
+  describe('#completePartialTxHex', () => {
+    const txHex = '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
+      '4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
+      '7dff000000070000000001312d0000000000000000000000000100000001639779b615' +
+      'd3d9052915ba105bb26627383225c2f808d594b0360d20f7b4214bdb51a773d0f5eb34' +
+      'c5157eea285fefa5a86f5e16000000070000000000001b580000000000000000000000' +
+      '0100000001639779b615d3d9052915ba105bb26627383225c2000000026a9802ce0e67' +
+      '81104c752ab0e597b33d10d398a170479390fc5364f7ec2024d100000004f808d594b0' +
+      '360d20f7b4214bdb51a773d0f5eb34c5157eea285fefa5a86f5e160000000500000000' +
+      '00001b580000000100000000ebd62c45493b7414ff03147d59d5a8c61521fc784a942f' +
+      '772beb64c6c6a9c58400000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481' +
+      'a9cb862f4b0b7d57c64500000005000000000000006400000001000000000000002254' +
+      '7820637265617465642066726f6d206f66666572206d616b6520636f6d6d616e64'
+    const addrReferences = { '2ns8XVRdy8TRVJJaa9BTNTu2AvpdGweQ3vXfq3WnJVzAn2Qp9E': 'X-avax1x47tu0zj4ss3lf4kvmvyk0hk4gwp07t7jhh0kn' }
+
+    it('should complete', async () => {
+      // mock instance of minimal-avax-wallet
+      uut.avaxWallet = new AvalancheWallet()
+      uut.avaxWallet.utxos.utxoStore[2].amount = 30000000
+      const result = await uut.completePartialTxHex(txHex, addrReferences)
+
+      assert.hasAllKeys(result, ['txHex', 'addrReferences'])
+    })
+
+    it('should exit with error status if the wallet doesnt have the asset', async () => {
+      try {
+        uut.avaxWallet = new AvalancheWallet()
+        uut.avaxWallet.utxos.assets = []
+
+        await uut.completePartialTxHex(txHex, addrReferences)
+        assert.fail('Unexpected result')
+      } catch (err) {
+        assert.include(
+          err.message,
+          'Insufficient funds. You are trying to send AVAX, but the wallet doesn\'t have any',
+          'Expected error message'
+        )
+      }
+    })
+
+    it('should exit with error status if the wallet doesnt have enough AVAX to send', async () => {
+      try {
+        uut.avaxWallet = new AvalancheWallet()
+        uut.avaxWallet.utxos.utxoStore = null
+
+        await uut.completePartialTxHex(txHex, addrReferences)
+        assert.fail('Unexpected result')
+      } catch (err) {
+        assert.include(
+          err.message,
+          'Not enough avax in the selected address',
+          'Expected error message'
+        )
+      }
     })
   })
 

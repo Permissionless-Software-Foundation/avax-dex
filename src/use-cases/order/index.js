@@ -26,8 +26,6 @@ class OrderUseCases {
 
   // This method is called by the POST /order REST API controller, which is
   // triggered by a P2WDB webhook.
-  // TODO: 12/27 this function expects BCH data. it needs to be refactored to
-  // work with AVAX
   async createOrder (orderObj) {
     try {
       console.log('Use Case createOrder(orderObj): ', orderObj)
@@ -52,7 +50,7 @@ class OrderUseCases {
 
       return true
     } catch (err) {
-      console.error('Error in use-cases/order/createOrder()')
+      console.error('Error in use-cases/order/createOrder()', err)
       throw err
     }
   }
@@ -63,6 +61,73 @@ class OrderUseCases {
     } catch (error) {
       console.error('Error in use-cases/order/listOrders()')
       throw error
+    }
+  }
+
+  async takeOrder (entryObj) {
+    try {
+      console.log('Use Case takeOrder(entryObj):', entryObj)
+      const { txHex, addrReferences, p2wdbHash, orderStatus } = entryObj
+
+      if (orderStatus && orderStatus !== 'posted') {
+        throw new Error('order already taken')
+      }
+
+      await this.adapters.wallet.bchWallet.walletInfoPromise
+      await this.adapters.p2wdb.checkForSufficientFunds(
+        this.adapters.wallet.bchWallet.walletInfo.privateKey
+      )
+
+      const reference = JSON.parse(addrReferences)
+      const partialTx = await this.adapters.wallet.completePartialTxHex(
+        txHex,
+        reference
+      )
+
+      entryObj.offerHash = p2wdbHash
+
+      delete entryObj.p2wdbHash
+      delete entryObj.timestamp
+      delete entryObj.localTimestamp
+      delete entryObj.txid
+
+      entryObj.orderStatus = 'taken'
+      entryObj.txHex = partialTx.txHex
+      entryObj.addrReferences = partialTx.addrReferences
+
+      const hash = await this.adapters.p2wdb.write({
+        wif: this.adapters.wallet.bchWallet.walletInfo.privateKey,
+        data: entryObj,
+        appId: 'swapTest555'
+      })
+
+      return hash
+    } catch (err) {
+      console.log('Error in use-cases/takeOrder())', err)
+      throw err
+    }
+  }
+
+  async findOrder (orderId) {
+    try {
+      const order = await this.OrderModel.findById(orderId)
+
+      if (!order) {
+        throw new Error('order not found')
+      }
+
+      const orderObject = order.toObject()
+      const orderEntity = this.orderEntity.validate({
+        data: orderObject,
+        timestamp: orderObject.timestamp,
+        localTimeStamp: orderObject.localTimeStamp,
+        txid: orderObject.txid,
+        hash: orderObject.p2wdbHash
+      })
+      return orderEntity
+    } catch (err) {
+      console.error('Error in findOrder(): ', err)
+      throw err
     }
   }
 }
