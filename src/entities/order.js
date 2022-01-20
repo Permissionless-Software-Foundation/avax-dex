@@ -78,8 +78,8 @@ class OrderEntity {
       utxoTxid,
       utxoVout,
       orderStatus: orderStatus || this.orderStatus[0],
-      txHex,
-      addrReferences,
+      txHex, // Hex serialized transaction.
+      addrReferences, // Addresses that control UTXOs used in transaction.
       timestamp: orderData.timestamp,
       localTimestamp: orderData.localTimeStamp,
       txid: orderData.txid,

@@ -68,7 +68,10 @@ class OrderRESTControllerLib {
 
       const orderId = ctx.request.body.orderId
 
+      // Find the Order.
       const orderEntity = await _this.useCases.order.findOrder(orderId)
+
+      // 'Take' the Order.
       const hash = await _this.useCases.order.takeOrder(orderEntity)
 
       ctx.body = { hash }
