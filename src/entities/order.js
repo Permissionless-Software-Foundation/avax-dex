@@ -89,6 +89,16 @@ class OrderEntity {
 
     return validatedOrderData
   }
+
+  validateFromModel (model) {
+    return this.validate({
+      data: model,
+      timestamp: model.timestamp,
+      localTimeStamp: model.localTimeStamp,
+      txid: model.txid,
+      hash: model.p2wdbHash
+    })
+  }
 }
 
 module.exports = OrderEntity

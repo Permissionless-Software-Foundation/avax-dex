@@ -56,7 +56,7 @@ const localdb = {
   },
 
   Entry: class Entry {
-    constructor(obj) {
+    constructor (obj) {
       ; (this._id = 'id'), (this.entry = obj.entry)
       this.slpAddress = obj.slpAddress
       this.description = obj.description
@@ -76,7 +76,7 @@ const localdb = {
   },
 
   Order: class Order {
-    constructor(obj) { }
+    constructor (obj) { }
 
     static findById () { }
     static find () { }
@@ -88,7 +88,7 @@ const localdb = {
   },
 
   Offer: class Offer {
-    constructor(obj) { }
+    constructor (obj) { }
 
     static findById () { }
     static find () { }
@@ -132,10 +132,10 @@ const wallet = {
       hdIndex: index
     }
   },
-  createPartialTxHex: () => {},
-  completePartialTxHex: () => {},
-  getTxOut: () => {},
-  findTxOut: () => {},
+  createPartialTxHex: () => { },
+  completePartialTxHex: () => { },
+  getTxOut: () => { },
+  findTxOut: () => { },
   bchWallet: new MockBchWallet(),
   avaxWallet: new AvalancheWallet()
 }
