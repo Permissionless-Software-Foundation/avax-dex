@@ -35,7 +35,6 @@ class OfferRESTControllerLib {
       // console.log('body: ', ctx.request.body)
 
       const offerObj = ctx.request.body.offer
-
       const hash = await _this.useCases.offer.createOffer(offerObj)
 
       ctx.body = { hash }
@@ -56,6 +55,27 @@ class OfferRESTControllerLib {
     } catch (err) {
       console.log('Error in listOffers REST API handler.')
       _this.handleError(ctx, err)
+    }
+  }
+
+  async checkStatusByOfferHash (ctx) {
+    try {
+      const p2wdbOfferHash = ctx.request.body.hash
+      const order = await _this.useCases.order.checkTakenOrder(p2wdbOfferHash)
+
+      if (!order) {
+        ctx.body = {
+          order: false
+        }
+        return
+      }
+
+      ctx.body = {
+        order
+      }
+    } catch (error) {
+      console.log('Error in checkStatus REST API handler.')
+      _this.handleError(ctx, error)
     }
   }
 

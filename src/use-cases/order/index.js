@@ -126,16 +126,25 @@ class OrderUseCases {
       }
 
       const orderObject = order.toObject()
-      const orderEntity = this.orderEntity.validate({
-        data: orderObject,
-        timestamp: orderObject.timestamp,
-        localTimeStamp: orderObject.localTimeStamp,
-        txid: orderObject.txid,
-        hash: orderObject.p2wdbHash
-      })
-      return orderEntity
+      return this.orderEntity.validateFromModel(orderObject)
     } catch (err) {
       console.error('Error in findOrder(): ', err)
+      throw err
+    }
+  }
+
+  async checkTakenOrder (offerHash) {
+    try {
+      const order = await this.OrderModel.findOne({ offerHash, orderStatus: 'taken' })
+
+      if (!order) {
+        return false
+      }
+
+      const orderObject = order.toObject()
+      return this.orderEntity.validateFromModel(orderObject)
+    } catch (err) {
+      console.error('Error in checkTakenOrder(): ', err)
       throw err
     }
   }

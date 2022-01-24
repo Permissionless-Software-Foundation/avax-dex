@@ -113,6 +113,37 @@ describe('#order-use-case', () => {
 
       assert.equal(result, true)
     })
+
+    it('should throw an error', async () => {
+      sandbox.stub(uut.adapters.wallet, 'getTxOut').rejects(new Error('intended error'))
+      const orderObj = {
+        appId: 'swapTest555',
+        data: {
+          messageType: 1,
+          messageClass: 1,
+          tokenId: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
+          buyOrSell: 'sell',
+          rateInSats: 1000,
+          minSatsToExchange: 10,
+          numTokens: 0.02,
+          utxoTxid: '23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK',
+          utxoVout: 1,
+          txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b000',
+          addrReferences: '{"23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa493fANVn":"X-avax1swa5l9h5cax8jwne2usxp88rwnr4n7t699hj0g"}'
+        },
+        timestamp: '2021-09-20T17:54:26.395Z',
+        localTimeStamp: '9/20/2021, 10:54:26 AM',
+        txid: '46f50f2a0cf44e3ed70dfb0618ef3ebfee57aabcf229b5d2d17c07322b54a8d7',
+        hash: 'zdpuB2X25AZCKo3wpr4sSbw44vqPWJRqcxWQRHZccK5BdtoGD'
+      }
+
+      try {
+        await uut.createOrder(orderObj)
+        assert.fail('unexpected path')
+      } catch (error) {
+        assert.include(error.message, 'intended error')
+      }
+    })
   })
 
   describe('#listOrders', () => {
@@ -151,15 +182,6 @@ describe('#order-use-case', () => {
         'localTimestamp',
         'p2wdbHash'
       ])
-    })
-
-    it('should throw an error', async () => {
-      try {
-        sandbox.stub(uut.OrderModel, 'find').rejects(new Error('localdb error'))
-        await uut.listOrders()
-      } catch (error) {
-        assert.include(error.message, 'localdb error')
-      }
     })
   })
 
@@ -245,13 +267,13 @@ describe('#order-use-case', () => {
         p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2'
       }
 
-      const TxStub = sinon.stub(uut.adapters.wallet, 'completePartialTxHex')
+      const TxStub = sandbox.stub(uut.adapters.wallet, 'completePartialTxHex')
       TxStub.resolves({
         txHex: 'hex',
         addrReferences: '{}'
       })
 
-      const writeStub = sinon.stub(uut.adapters.p2wdb, 'write')
+      const writeStub = sandbox.stub(uut.adapters.p2wdb, 'write')
       writeStub.resolves('somehash')
 
       const hash = await uut.takeOrder(orderEntity)
@@ -269,6 +291,91 @@ describe('#order-use-case', () => {
         assert.fail('Unexpected code path')
       } catch (error) {
         assert.include(error.message, 'order already taken')
+      }
+    })
+  })
+
+  describe('#checkTakenOrder', () => {
+    const offerHash = 'zdpuB1yPwL9FdpvtD5rP7b2Pk77ZdNNVzn2hG2KEvYmij1UE2'
+
+    it('should return the order if the offer has been taken', async () => {
+      const validateFromModelStub = sandbox.spy(uut.orderEntity, 'validateFromModel')
+      const findOneStub = sandbox.stub(uut.OrderModel, 'findOne')
+      findOneStub.resolves({
+        toObject: () => ({
+          _id: '61e96b2b97bb460640e211d6',
+          messageType: 1,
+          messageClass: 1,
+          tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          buyOrSell: 'sell',
+          rateInSats: 1000,
+          minSatsToExchange: 10,
+          numTokens: 1,
+          utxoTxid: 'hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhQzAKMy',
+          utxoVout: 1,
+          orderStatus: 'taken',
+          txHex: '0000000000000000000',
+          addrReferences: '{}',
+          timestamp: '2022-01-20T14:01:05.410Z',
+          localTimestamp: '1/20/2022, 10:01:05 AM',
+          offerHash,
+          p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2',
+          __v: 0
+        })
+      })
+
+      const order = await uut.checkTakenOrder(offerHash)
+      assert.hasAllKeys(order, [
+        'messageType',
+        'messageClass',
+        'tokenId',
+        'buyOrSell',
+        'rateInSats',
+        'minSatsToExchange',
+        'numTokens',
+        'utxoTxid',
+        'utxoVout',
+        'orderStatus',
+        'txHex',
+        'addrReferences',
+        'timestamp',
+        'localTimestamp',
+        'txid',
+        'p2wdbHash',
+        'offerHash'
+      ])
+      assert.isTrue(validateFromModelStub.called)
+      assert.isTrue(findOneStub.called)
+      assert.isTrue(findOneStub.calledWith({ offerHash, orderStatus: 'taken' }))
+    })
+
+    it('should return false if the offer has not been taken yet', async () => {
+      const validateFromModelStub = sandbox.stub(uut.orderEntity, 'validateFromModel')
+      const findOneStub = sandbox.stub(uut.OrderModel, 'findOne')
+      findOneStub.resolves(null)
+
+      const res = await uut.checkTakenOrder(offerHash)
+
+      assert.isTrue(findOneStub.called)
+      assert.isTrue(findOneStub.calledWith({ offerHash, orderStatus: 'taken' }))
+      assert.isFalse(res)
+      assert.isFalse(validateFromModelStub.called)
+    })
+
+    it('should throw an error', async () => {
+      const validateFromModelStub = sandbox.stub(uut.orderEntity, 'validateFromModel')
+      const findOneStub = sandbox.stub(uut.OrderModel, 'findOne')
+      findOneStub.rejects(new Error('intended error'))
+
+      try {
+        await uut.checkTakenOrder(offerHash)
+        assert.fail('Unexpected code path')
+      } catch (error) {
+        assert.include(error.message, 'intended error')
+
+        assert.isTrue(findOneStub.called)
+        assert.isTrue(findOneStub.calledWith({ offerHash, orderStatus: 'taken' }))
+        assert.isFalse(validateFromModelStub.called)
       }
     })
   })

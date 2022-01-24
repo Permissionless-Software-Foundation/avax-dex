@@ -138,6 +138,61 @@ describe('#Offer-REST-Router', () => {
     })
   })
 
+  describe('#checkStatusByOfferHash', () => {
+    const offerHash = 'zdpuB1yPwL9FdpvtD5rP7b2Pk77ZdNNVzn2hG2KEvYmij1UE2'
+
+    it('should return the order if the offer was taken', async () => {
+      ctx.request.body = { hash: offerHash }
+
+      const handleErrorSpy = sandbox.spy(uut, 'handleError')
+      const checkOrderStub = sandbox.stub(uut.useCases.order, 'checkTakenOrder')
+      checkOrderStub.resolves({
+        orderStatus: 'taken',
+        p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2',
+        offerHash
+      })
+
+      await uut.checkStatusByOfferHash(ctx)
+
+      assert.isTrue(checkOrderStub.calledWith(offerHash))
+      assert.property(ctx.body, 'order')
+      assert.typeOf(ctx.body.order, 'object')
+
+      assert.isFalse(handleErrorSpy.called)
+    })
+
+    it('should return false if the offer has not been taken', async () => {
+      ctx.request.body = { hash: offerHash }
+
+      const handleErrorSpy = sandbox.spy(uut, 'handleError')
+      const checkOrderStub = sandbox.stub(uut.useCases.order, 'checkTakenOrder')
+      checkOrderStub.resolves(false)
+
+      await uut.checkStatusByOfferHash(ctx)
+
+      assert.isTrue(checkOrderStub.calledWith(offerHash))
+      assert.property(ctx.body, 'order')
+      assert.isFalse(ctx.body.order)
+
+      assert.isFalse(handleErrorSpy.called)
+    })
+
+    it('should throw and catch an error', async () => {
+      ctx.request.body = { hash: offerHash }
+
+      const handleErrorSpy = sandbox.spy(uut, 'handleError')
+      const checkOrderStub = sandbox.stub(uut.useCases.order, 'checkTakenOrder')
+      checkOrderStub.rejects(new Error('intended error'))
+
+      try {
+        await uut.checkStatusByOfferHash(ctx)
+      } catch (error) {
+        assert.isTrue(checkOrderStub.calledWith(offerHash))
+        assert.isTrue(handleErrorSpy.called)
+      }
+    })
+  })
+
   describe('#handleError', () => {
     it('should still throw error if there is no message', () => {
       try {

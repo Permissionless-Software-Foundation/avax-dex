@@ -4,65 +4,69 @@
 /* eslint-disable */
 
 class UserUseCaseMock {
-  async createUser(userObj) {
+  async createUser (userObj) {
     return {}
   }
 
-  async getAllUsers() {
+  async getAllUsers () {
     return true
   }
 
-  async getUser(params) {
+  async getUser (params) {
     return true
   }
 
-  async updateUser(existingUser, newData) {
+  async updateUser (existingUser, newData) {
     return true
   }
 
-  async deleteUser(user) {
+  async deleteUser (user) {
     return true
   }
 
-  async authUser(login, passwd) {
+  async authUser (login, passwd) {
     return {
-      generateToken: () => {}
+      generateToken: () => { }
     }
   }
 }
 
 class EntryUseCaseMock {
-  async createEntry(userObj) {
+  async createEntry (userObj) {
     return {}
   }
 }
 
 class Offer {
-  async createOffer() {
+  async createOffer () {
     return {}
   }
-  async listOffers() {
+  async listOffers () {
     return {}
   }
 }
 
 class Order {
-  async createOrder() {
+  async createOrder () {
     return {}
   }
-  async listOrders() {
+  async listOrders () {
     return {}
   }
-  async findOrder() {
+  async findOrder () {
     return {}
   }
-  async takeOrder() {
+  async takeOrder () {
+    return {}
+  }
+
+  async checkTakenOrder () {
     return {}
   }
 }
 
 class UseCasesMock {
-  constuctor(localConfig = {}) {
+  constuctor (localConfig = {}) {
     // this.user = new UserUseCaseMock(localConfig)
   }
 
