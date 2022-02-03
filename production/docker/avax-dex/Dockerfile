@@ -63,6 +63,10 @@ RUN npm install
 # Generate the API docs
 RUN npm run docs
 
+# Copy the wallet files
+COPY wallet-avax.json wallet-avax.json
+COPY wallet.json wallet.json
+
 #VOLUME /home/safeuser/keys
 
 # Expose the port the API will be served on.

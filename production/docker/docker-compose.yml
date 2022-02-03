@@ -64,22 +64,21 @@ services:
       - ../data/ipfsdata/p2wdb:/home/safeuser/ipfs-p2wdb-service/.ipfsdata/p2wdb
     restart: always
 
-  # p2wdb:
-  #   build:
-  #     context: ./p2wdb/
-  #     dockerfile: Dockerfile
-  #   container_name: p2wdb
-  #   logging:
-  #     driver: 'json-file'
-  #     options:
-  #       max-size: '10m'
-  #       max-file: '10'
-  #   mem_limit: 1000mb
-  #   links:
-  #     - mongo-ipfs-service
-  #     - ipfs
-  #   ports:
-  #     - '5010:5010' # <host port>:<container port>
-  #   volumes:
-  #     - ../data/ipfsdata:/home/safeuser/ipfs-service-provider/.ipfsdata
-  #   restart: always
+  avax-dex:
+    build:
+      context: ./avax-dex/
+      dockerfile: Dockerfile
+    container_name: avax-dex
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '10'
+    mem_limit: 1000mb
+    links:
+      - mongo-ipfs-service
+    ports:
+      - '5110:5110' # <host port>:<container port>
+    # volumes:
+    #   - ../data/ipfsdata:/home/safeuser/ipfs-service-provider/.ipfsdata
+    restart: always

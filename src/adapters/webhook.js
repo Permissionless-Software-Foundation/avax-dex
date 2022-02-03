@@ -31,6 +31,7 @@ class WebHook {
       }
 
       const result = await axios.post(endpoint, obj)
+      console.log('Webhook created.')
 
       return result.data
     } catch (err) {
