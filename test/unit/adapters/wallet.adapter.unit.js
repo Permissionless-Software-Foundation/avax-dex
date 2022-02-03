@@ -452,7 +452,7 @@ describe('#wallet', () => {
     })
   })
 
-  describe('#completePartialTxHex', () => {
+  describe('#takePartialTxHex', () => {
     const txHex = '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
       '4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
       '7dff000000070000000001312d0000000000000000000000000100000001639779b615' +
@@ -471,7 +471,7 @@ describe('#wallet', () => {
       // mock instance of minimal-avax-wallet
       uut.avaxWallet = new AvalancheWallet()
       uut.avaxWallet.utxos.utxoStore[2].amount = 30000000
-      const result = await uut.completePartialTxHex(txHex, addrReferences)
+      const result = await uut.takePartialTxHex(txHex, addrReferences)
 
       assert.hasAllKeys(result, ['txHex', 'addrReferences'])
     })
@@ -481,7 +481,7 @@ describe('#wallet', () => {
         uut.avaxWallet = new AvalancheWallet()
         uut.avaxWallet.utxos.assets = []
 
-        await uut.completePartialTxHex(txHex, addrReferences)
+        await uut.takePartialTxHex(txHex, addrReferences)
         assert.fail('Unexpected result')
       } catch (err) {
         assert.include(
@@ -497,7 +497,7 @@ describe('#wallet', () => {
         uut.avaxWallet = new AvalancheWallet()
         uut.avaxWallet.utxos.utxoStore = null
 
-        await uut.completePartialTxHex(txHex, addrReferences)
+        await uut.takePartialTxHex(txHex, addrReferences)
         assert.fail('Unexpected result')
       } catch (err) {
         assert.include(

@@ -79,6 +79,31 @@ class OfferRESTControllerLib {
     }
   }
 
+  async acceptOffer (ctx) {
+    try {
+      console.log('body: ', ctx.request.body)
+
+      const orderHash = ctx.request.body.hash
+
+      // Find the Order.
+      const orderEntity = await _this.useCases.order.findOrderByHash(orderHash)
+      console.log(orderEntity)
+      const offerEntity = await _this.useCases.offer.findOfferByHash(orderEntity.offerHash)
+
+      // 'Take' the Order.
+      const { hash, txid } = await _this.useCases.order.completeOrder({
+        offerTxHex: offerEntity.txHex,
+        hdIndex: offerEntity.hdIndex,
+        orderEntity
+      })
+
+      ctx.body = { hash, txid }
+    } catch (err) {
+      console.log('Error in takeOrder REST API handler.')
+      _this.handleError(ctx, err)
+    }
+  }
+
   // DRY error handler
   handleError (ctx, err) {
     console.log('err', err.message)

@@ -84,7 +84,7 @@ class OrderUseCases {
 
       // Complete the partial-transaction, taking the other side of the trade.
       const reference = JSON.parse(addrReferences)
-      const partialTx = await this.adapters.wallet.completePartialTxHex(
+      const partialTx = await this.adapters.wallet.takePartialTxHex(
         txHex,
         reference
       )
@@ -113,6 +113,71 @@ class OrderUseCases {
       return hash
     } catch (err) {
       console.log('Error in use-cases/takeOrder())', err)
+      throw err
+    }
+  }
+
+  async completeOrder (entryObj) {
+    try {
+      console.log('Use-Case completeOrder(entryObj):', entryObj)
+      const { offerTxHex, orderEntity, hdIndex } = entryObj
+      const { txHex, addrReferences, orderStatus } = orderEntity
+
+      // Ensure the order is in a 'taken' state and not already 'completed' or just 'posted'
+      if (orderStatus && orderStatus !== 'taken') {
+        throw new Error('order already taken')
+      }
+
+      // Prepare to write to the P2WDB.
+      await this.adapters.wallet.bchWallet.walletInfoPromise
+      await this.adapters.p2wdb.checkForSufficientFunds(
+        this.adapters.wallet.bchWallet.walletInfo.privateKey
+      )
+
+      // Delete properties from the original Order.
+      delete entryObj.p2wdbHash
+      delete entryObj.timestamp
+      delete entryObj.localTimestamp
+      delete entryObj.txHex
+      delete entryObj.addrReferences
+
+      const { valid, message } = await this.adapters.wallet.validateIntegrity(offerTxHex, txHex)
+
+      if (!valid) {
+        throw new Error(message)
+      }
+      const reference = JSON.parse(addrReferences)
+      const txid = await this.adapters.wallet.completeTxHex(txHex, reference, hdIndex)
+      entryObj.txid = txid
+      entryObj.orderStatus = 'accepted'
+
+      // Write the updated order information to the P2WDB.
+      const hash = 'asdasd'
+      // await this.adapters.p2wdb.write({
+      //   wif: this.adapters.wallet.bchWallet.walletInfo.privateKey,
+      //   data: entryObj,
+      //   appId: 'swapTest555'
+      // })
+
+      return { txid, hash }
+    } catch (error) {
+      console.error('Error in completeOrder(): ', error)
+      throw error
+    }
+  }
+
+  async findOrderByHash (p2wdbHash) {
+    try {
+      const order = await this.OrderModel.findOne({ p2wdbHash })
+
+      if (!order) {
+        throw new Error('order not found')
+      }
+
+      const orderObject = order.toObject()
+      return this.orderEntity.validateFromModel(orderObject)
+    } catch (err) {
+      console.error('Error in findOrder(): ', err)
       throw err
     }
   }

@@ -4,14 +4,14 @@
 
 // Public npm libraries.
 const axios = require('axios')
-const { Write } = require('p2wdb/index')
+const { Write, Read } = require('p2wdb/index')
 
 // local libraries
 const config = require('../../config')
 
 // Global constants
 // const P2WDB_SERVER = 'http://localhost:5001'
-const P2WDB_SERVER = `http://localhost:${config.p2wdbPort}`
+const P2WDB_SERVER = `http://172.16.0.3:${config.p2wdbPort}`
 // const P2WDB_SERVER = 'https://p2wdb.fullstack.cash/entry/write'
 
 class P2wdbAdapter {
@@ -19,6 +19,7 @@ class P2wdbAdapter {
     // Encapsulate dependencies
     this.axios = axios
     this.Write = Write
+    this.Read = Read
     this.bchjs = localConfig.bchjs || {}
     this.p2wdbURL = localConfig.p2wdbURL || P2WDB_SERVER
   }

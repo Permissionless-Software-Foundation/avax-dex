@@ -267,7 +267,7 @@ describe('#order-use-case', () => {
         p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2'
       }
 
-      const TxStub = sandbox.stub(uut.adapters.wallet, 'completePartialTxHex')
+      const TxStub = sinon.stub(uut.adapters.wallet, 'takePartialTxHex')
       TxStub.resolves({
         txHex: 'hex',
         addrReferences: '{}'
