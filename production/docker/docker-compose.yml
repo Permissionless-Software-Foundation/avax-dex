@@ -57,7 +57,7 @@ services:
       - mongo-ipfs-service
     ports:
       # <host port>:<container port>
-      - 5667:5667 # REST API
+      - 5700:5700 # REST API
       #- 5668:5668 # IPFS TCP port
       #- 5669:5669 # IPFS WS Port
     volumes:

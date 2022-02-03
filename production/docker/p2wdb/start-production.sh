@@ -33,7 +33,7 @@ export IPFS_TCP_PORT=5668
 export IPFS_WS_PORT=5669
 
 # Configure REST API port
-export PORT=5667
+export PORT=5700
 
 export P2W_ENV=production
 export IPFS_HOST=172.17.0.1
