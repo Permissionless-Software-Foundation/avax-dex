@@ -22,8 +22,10 @@ class WebHook {
       if (!url || typeof url !== 'string') {
         throw new Error('url must be a string')
       }
+      console.log(`Webhook will target this url: ${url}`)
 
       const endpoint = _this.config.webhookService
+      console.log(`Connecting to endpoint: ${endpoint}`)
 
       const obj = {
         appId: APPID,
