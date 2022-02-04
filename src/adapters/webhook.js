@@ -22,8 +22,10 @@ class WebHook {
       if (!url || typeof url !== 'string') {
         throw new Error('url must be a string')
       }
+      console.log(`Webhook will target this url: ${url}`)
 
       const endpoint = _this.config.webhookService
+      console.log(`Connecting to endpoint: ${endpoint}`)
 
       const obj = {
         appId: APPID,
@@ -31,10 +33,11 @@ class WebHook {
       }
 
       const result = await axios.post(endpoint, obj)
+      console.log('Webhook created.')
 
       return result.data
     } catch (err) {
-      console.log('Error in adapters/webhook/createWebHook()')
+      console.log('Error in adapters/webhook/createWebHook(): ', err)
       throw err
     }
   }
