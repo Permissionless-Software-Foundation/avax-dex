@@ -193,6 +193,64 @@ describe('#Offer-REST-Router', () => {
     })
   })
 
+  describe('#acceptOffer', () => {
+    const orderHash = 'zdpuB1yPwL9FdpvtD5rP7b2Pk77ZdNNVzn2hG2KEvYmij1UE2'
+    const offerHash = 'zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE'
+
+    it('should return the txid and the p2wdb hash', async () => {
+      ctx.request.body = { hash: orderHash }
+
+      const handleErrorSpy = sandbox.spy(uut, 'handleError')
+
+      const orderByHashStub = sandbox.stub(uut.useCases.order, 'findOrderByHash')
+      const orderMock = {
+        orderStatus: 'taken',
+        txHex: 'partiallySignedHex',
+        p2wdbHash: orderHash,
+        offerHash
+      }
+      orderByHashStub.resolves(orderMock)
+
+      const offerByHashStub = sandbox.stub(uut.useCases.offer, 'findOfferByHash')
+      const offerMock = {
+        txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000000003e8000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a100000001a045bd411acbb02ab31b1ac9a29cbd9e27001d5940a9291fc053d7683e716afc00000001f808d594b0360d20f7b4214bdb51a773d0f5eb34c5157eea285fefa5a86f5e16000000050000000000000834000000010000000000000000',
+        p2wdbHash: offerHash,
+        hdIndex: 3
+      }
+      offerByHashStub.resolves(offerMock)
+
+      const completeOrderStub = sandbox.stub(uut.useCases.order, 'completeOrder')
+      completeOrderStub.resolves({ hash: 'hash', txid: 'txid' })
+
+      await uut.acceptOffer(ctx)
+
+      assert.isTrue(orderByHashStub.calledWith(orderHash))
+      assert.isTrue(offerByHashStub.calledWith(offerHash))
+      assert.isTrue(completeOrderStub.calledWith({
+        offerTxHex: offerMock.txHex,
+        hdIndex: offerMock.hdIndex,
+        orderEntity: orderMock
+      }))
+      assert.hasAllKeys(ctx.body, ['hash', 'txid'])
+      assert.isTrue(handleErrorSpy.notCalled)
+    })
+
+    it('should throw and catch an error', async () => {
+      ctx.request.body = { hash: orderHash }
+
+      const handleErrorSpy = sandbox.spy(uut, 'handleError')
+      const orderByHashStub = sandbox.stub(uut.useCases.order, 'findOrderByHash')
+      orderByHashStub.rejects(new Error('Order not found'))
+
+      try {
+        await uut.acceptOffer(ctx)
+      } catch (error) {
+        assert.isTrue(orderByHashStub.calledWith(orderHash))
+        assert.isTrue(handleErrorSpy.called)
+      }
+    })
+  })
+
   describe('#handleError', () => {
     it('should still throw error if there is no message', () => {
       try {

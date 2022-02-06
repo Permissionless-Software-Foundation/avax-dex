@@ -4,7 +4,7 @@
 
 // Public npm libraries.
 const axios = require('axios')
-const { Write } = require('p2wdb/index')
+const { Write, Read } = require('p2wdb/index')
 
 // local libraries
 const config = require('../../config')
@@ -19,6 +19,7 @@ class P2wdbAdapter {
     // Encapsulate dependencies
     this.axios = axios
     this.Write = Write
+    this.Read = Read
     this.bchjs = localConfig.bchjs || {}
     this.p2wdbURL = localConfig.p2wdbURL || P2WDB_SERVER
   }

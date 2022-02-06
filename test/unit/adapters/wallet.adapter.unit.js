@@ -24,7 +24,6 @@ const testAvaxWalletFile = `${__dirname.toString()}/test-avax-wallet.json`
 
 describe('#wallet', () => {
   let uut
-  /** @type {sinon.SinonSandbox} */
   let sandbox
 
   before(() => {
@@ -452,7 +451,7 @@ describe('#wallet', () => {
     })
   })
 
-  describe('#completePartialTxHex', () => {
+  describe('#takePartialTxHex', () => {
     const txHex = '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
       '4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
       '7dff000000070000000001312d0000000000000000000000000100000001639779b615' +
@@ -465,13 +464,15 @@ describe('#wallet', () => {
       '772beb64c6c6a9c58400000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481' +
       'a9cb862f4b0b7d57c64500000005000000000000006400000001000000000000002254' +
       '7820637265617465642066726f6d206f66666572206d616b6520636f6d6d616e64'
-    const addrReferences = { '2ns8XVRdy8TRVJJaa9BTNTu2AvpdGweQ3vXfq3WnJVzAn2Qp9E': 'X-avax1x47tu0zj4ss3lf4kvmvyk0hk4gwp07t7jhh0kn' }
+    const addrReferences = {
+      Bmf8WUVKkiP97rFf3vFERoiWZy634WfpMKuWrJJ1x3YjMLcbi: 'X-avax1jzrstc0mvwk9m4hqmz0fyxcvx2mkzwdtmqpppr'
+    }
 
     it('should complete', async () => {
       // mock instance of minimal-avax-wallet
       uut.avaxWallet = new AvalancheWallet()
       uut.avaxWallet.utxos.utxoStore[2].amount = 30000000
-      const result = await uut.completePartialTxHex(txHex, addrReferences)
+      const result = await uut.takePartialTxHex(txHex, addrReferences)
 
       assert.hasAllKeys(result, ['txHex', 'addrReferences'])
     })
@@ -481,7 +482,7 @@ describe('#wallet', () => {
         uut.avaxWallet = new AvalancheWallet()
         uut.avaxWallet.utxos.assets = []
 
-        await uut.completePartialTxHex(txHex, addrReferences)
+        await uut.takePartialTxHex(txHex, addrReferences)
         assert.fail('Unexpected result')
       } catch (err) {
         assert.include(
@@ -497,7 +498,7 @@ describe('#wallet', () => {
         uut.avaxWallet = new AvalancheWallet()
         uut.avaxWallet.utxos.utxoStore = null
 
-        await uut.completePartialTxHex(txHex, addrReferences)
+        await uut.takePartialTxHex(txHex, addrReferences)
         assert.fail('Unexpected result')
       } catch (err) {
         assert.include(
@@ -606,6 +607,173 @@ describe('#wallet', () => {
       } catch (error) {
         assert.include(error.message, 'txid must be a valid b58 string')
       }
+    })
+  })
+
+  describe('#completeTxHex', () => {
+    const hdIndex = 3
+    const txHex = '00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae' +
+      '10626739e35c4b0000000421e67317cbc4be2aeb00677ad6462778a8f52274b9d605df' +
+      '2591b23027a87dff000000070000000000989680000000000000000000000001000000' +
+      '01908705e1fb63ac5dd6e0d89e921b0c32b76139ab21e67317cbc4be2aeb00677ad646' +
+      '2778a8f52274b9d605df2591b23027a87dff00000007000000000121eac00000000000' +
+      '00000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a1e49b53ab' +
+      '21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c64500000007000000' +
+      '0000000032000000000000000000000001000000012a911a32b2dcfa390b020b406131' +
+      'df356b84a2a1e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d' +
+      '57c64500000007000000000000003200000000000000000000000100000001908705e1' +
+      'fb63ac5dd6e0d89e921b0c32b76139ab0000000218745a2beff9066fa451d26bd869b9' +
+      'd893fe106c23f990ce39bae861f5e7cb5e00000001e49b53ab21c6f7b10bf8efb3e3bc' +
+      '0059954989b3d481a9cb862f4b0b7d57c6450000000500000000000000640000000100' +
+      '00000021fb8df61ac586407cbca7da26a0385a72e88dc0bf6e01a772b9ae400da10336' +
+      '0000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87d' +
+      'ff000000050000000001c9c38000000001000000000000000000000002000000090000' +
+      '0000000000090000000102a6d91c7a71692d95fd2c73d00a0f1b64b2e76738410fce06' +
+      '5cc79f2ca9a6b14c88baf4c3fc679a1af5af76aa29b2e6fc9b1f8ce04a63b517c087dd' +
+      '3041f2cd00'
+    const addrReferences = {
+      Bmf8WUVKkiP97rFf3vFERoiWZy634WfpMKuWrJJ1x3YjMLcbi: 'X-avax15d4zzjxsl02qpx60xupnz7z3sxagans7dwgyzj',
+      Fy3NFR7DrriWWNBpogrsgXoAmZpdYcoRHz6n7uW17nRBaqovw: 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd'
+    }
+
+    it('should throw an error if the signatures are not completed', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      const ref = {
+        '2ns8XVRdy8TRVJJaa9BTNTu2AvpdGweQ3vXfq3WnJVzAn2Qp9E': 'X-avax1x47tu0zj4ss3lf4kvmvyk0hk4gwp07t7jhh0kn'
+      }
+
+      try {
+        await uut.completeTxHex(txHex, ref, hdIndex)
+      } catch (error) {
+        assert.equal('The transaction is not fully signed', error.message)
+      }
+    })
+
+    it('should broadcast the tx and return the txid', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+      uut.AvaxWallet = AvalancheWallet
+
+      try {
+        const res = await uut.completeTxHex(txHex, addrReferences, hdIndex)
+        assert.equal(res.txid, 'txid')
+      } catch (error) {
+        assert.fail('Unexpected code path')
+      }
+    })
+  })
+
+  describe('#validateIntegrity', () => {
+    it('should return false if there are extra inputs that mismatch the original', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      // Offer has an input thats not present in the Order
+      const offerHex = '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
+        '4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
+        '7dff000000070000000001312d0000000000000000000000000100000001639779b615' +
+        'd3d9052915ba105bb26627383225c2f808d594b0360d20f7b4214bdb51a773d0f5eb34' +
+        'c5157eea285fefa5a86f5e16000000070000000000001b580000000000000000000000' +
+        '0100000001639779b615d3d9052915ba105bb26627383225c2000000026a9802ce0e67' +
+        '81104c752ab0e597b33d10d398a170479390fc5364f7ec2024d100000004f808d594b0' +
+        '360d20f7b4214bdb51a773d0f5eb34c5157eea285fefa5a86f5e160000000500000000' +
+        '00001b580000000100000000ebd62c45493b7414ff03147d59d5a8c61521fc784a942f' +
+        '772beb64c6c6a9c58400000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481' +
+        'a9cb862f4b0b7d57c64500000005000000000000006400000001000000000000002254' +
+        '7820637265617465642066726f6d206f66666572206d616b6520636f6d6d616e64'
+      const orderHex = '00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae' +
+        '10626739e35c4b0000000321e67317cbc4be2aeb00677ad6462778a8f52274b9d605df' +
+        '2591b23027a87dff0000000700000000005b8d80000000000000000000000001000000' +
+        '012a911a32b2dcfa390b020b406131df356b84a2a121e67317cbc4be2aeb00677ad646' +
+        '2778a8f52274b9d605df2591b23027a87dff0000000700000000009896800000000000' +
+        '0000000000000100000001908705e1fb63ac5dd6e0d89e921b0c32b76139abe49b53ab' +
+        '21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c64500000007000000' +
+        '0000000064000000000000000000000001000000012a911a32b2dcfa390b020b406131' +
+        'df356b84a2a10000000218745a2beff9066fa451d26bd869b9d893fe106c23f990ce39' +
+        'bae861f5e7cb5e00000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb' +
+        '862f4b0b7d57c64500000005000000000000006400000001000000005bdf7b977813f6' +
+        '04ac5c285f4571db906afdf4e1197e2a39e9284a73976e26910000000021e67317cbc4' +
+        'be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000050000000001' +
+        '036640000000010000000000000022547820637265617465642066726f6d206f666665' +
+        '722074616b6520636f6d6d616e64000000020000000900000000000000090000000169' +
+        '7ad8096a0f48aaf3bca4c151375f1ffee13f582e0c6c933f1d3d27cad78ebe6bdc4726' +
+        '131e5b0c3325e365bd0735cac870a5f5422a6bc6a05ad12d0c65bcd500'
+
+      const res = await uut.validateIntegrity(offerHex, orderHex)
+      assert.isFalse(res.valid)
+      assert.include(res.message, 'is not present in the order')
+    })
+
+    it('should return false if the original outputs are not present or have been modified', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      // Offer must return 0.5 tokens to origin address
+      // but order is set to give it all to the buyer
+      const offerHex = '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
+        '4b0000000221e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
+        '7dff00000007000000000098968000000000000000000000000100000001908705e1fb' +
+        '63ac5dd6e0d89e921b0c32b76139abe49b53ab21c6f7b10bf8efb3e3bc0059954989b3' +
+        'd481a9cb862f4b0b7d57c6450000000700000000000000320000000000000000000000' +
+        '0100000001908705e1fb63ac5dd6e0d89e921b0c32b76139ab0000000118745a2beff9' +
+        '066fa451d26bd869b9d893fe106c23f990ce39bae861f5e7cb5e00000001e49b53ab21' +
+        'c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c6450000000500000000' +
+        '00000064000000010000000000000022547820637265617465642066726f6d206f6666' +
+        '6572206d616b6520636f6d6d616e64'
+      const orderHex = '00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae' +
+        '10626739e35c4b0000000321e67317cbc4be2aeb00677ad6462778a8f52274b9d605df' +
+        '2591b23027a87dff0000000700000000005b8d80000000000000000000000001000000' +
+        '012a911a32b2dcfa390b020b406131df356b84a2a121e67317cbc4be2aeb00677ad646' +
+        '2778a8f52274b9d605df2591b23027a87dff0000000700000000009896800000000000' +
+        '0000000000000100000001908705e1fb63ac5dd6e0d89e921b0c32b76139abe49b53ab' +
+        '21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c64500000007000000' +
+        '0000000064000000000000000000000001000000012a911a32b2dcfa390b020b406131' +
+        'df356b84a2a10000000218745a2beff9066fa451d26bd869b9d893fe106c23f990ce39' +
+        'bae861f5e7cb5e00000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb' +
+        '862f4b0b7d57c64500000005000000000000006400000001000000005bdf7b977813f6' +
+        '04ac5c285f4571db906afdf4e1197e2a39e9284a73976e26910000000021e67317cbc4' +
+        'be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000050000000001' +
+        '036640000000010000000000000022547820637265617465642066726f6d206f666665' +
+        '722074616b6520636f6d6d616e64000000020000000900000000000000090000000169' +
+        '7ad8096a0f48aaf3bca4c151375f1ffee13f582e0c6c933f1d3d27cad78ebe6bdc4726' +
+        '131e5b0c3325e365bd0735cac870a5f5422a6bc6a05ad12d0c65bcd500'
+
+      const res = await uut.validateIntegrity(offerHex, orderHex)
+      assert.isFalse(res.valid)
+      assert.include(res.message, 'Missing output with asset')
+    })
+
+    it('should return false if the original outputs are not present or have been modified', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      // Offer and taken order have the inital inputs and outputs
+      const offerHex = '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
+        '4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
+        '7dff00000007000000000098968000000000000000000000000100000001908705e1fb' +
+        '63ac5dd6e0d89e921b0c32b76139ab0000000118745a2beff9066fa451d26bd869b9d8' +
+        '93fe106c23f990ce39bae861f5e7cb5e00000001e49b53ab21c6f7b10bf8efb3e3bc00' +
+        '59954989b3d481a9cb862f4b0b7d57c645000000050000000000000064000000010000' +
+        '000000000022547820637265617465642066726f6d206f66666572206d616b6520636f' +
+        '6d6d616e64'
+      const orderHex = '00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae' +
+        '10626739e35c4b0000000321e67317cbc4be2aeb00677ad6462778a8f52274b9d605df' +
+        '2591b23027a87dff0000000700000000005b8d80000000000000000000000001000000' +
+        '012a911a32b2dcfa390b020b406131df356b84a2a121e67317cbc4be2aeb00677ad646' +
+        '2778a8f52274b9d605df2591b23027a87dff0000000700000000009896800000000000' +
+        '0000000000000100000001908705e1fb63ac5dd6e0d89e921b0c32b76139abe49b53ab' +
+        '21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c64500000007000000' +
+        '0000000064000000000000000000000001000000012a911a32b2dcfa390b020b406131' +
+        'df356b84a2a10000000218745a2beff9066fa451d26bd869b9d893fe106c23f990ce39' +
+        'bae861f5e7cb5e00000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb' +
+        '862f4b0b7d57c64500000005000000000000006400000001000000005bdf7b977813f6' +
+        '04ac5c285f4571db906afdf4e1197e2a39e9284a73976e26910000000021e67317cbc4' +
+        'be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000050000000001' +
+        '036640000000010000000000000022547820637265617465642066726f6d206f666665' +
+        '722074616b6520636f6d6d616e64000000020000000900000000000000090000000169' +
+        '7ad8096a0f48aaf3bca4c151375f1ffee13f582e0c6c933f1d3d27cad78ebe6bdc4726' +
+        '131e5b0c3325e365bd0735cac870a5f5422a6bc6a05ad12d0c65bcd500'
+
+      const res = await uut.validateIntegrity(offerHex, orderHex)
+      assert.isTrue(res.valid)
+      assert.isTrue(res.message === undefined)
     })
   })
 })

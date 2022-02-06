@@ -284,7 +284,7 @@ class WalletAdapter {
     }
   }
 
-  async completePartialTxHex (txHex, addrReferences) {
+  async takePartialTxHex (txHex, addrReferences) {
     try {
       const walletData = this.avaxWallet
       const avaxIdString = walletData.sendAvax.avaxID
@@ -398,7 +398,54 @@ class WalletAdapter {
         addrReferences: JSON.stringify(addrReferences)
       }
     } catch (err) {
-      console.log('Error in wallet.json/completePartialTxHex()', err)
+      console.log('Error in wallet.json/takePartialTxHex()', err)
+      throw err
+    }
+  }
+
+  async completeTxHex (txHex, addrReferences, hdIndex) {
+    try {
+      const keyPair = await this.getAvaxKeyPair(hdIndex)
+      const walletData = new this.AvaxWallet(keyPair.getPrivateKeyString(), { noUpdate: true })
+      await walletData.walletInfoPromise
+
+      // Parse the partially signed transaction
+      const halfSignedTx = new walletData.utxos.avm.Tx()
+      const txBuffer = Buffer.from(txHex, 'hex')
+      halfSignedTx.fromBuffer(txBuffer)
+
+      const credentials = halfSignedTx.getCredentials()
+      const partialTx = halfSignedTx.getUnsignedTx()
+
+      // Sign Alice's input.
+      const keyChain = walletData.tokens.xchain.keyChain()
+      keyChain.addKey(keyPair)
+
+      const signed = this.partialySignTx(
+        walletData,
+        partialTx,
+        keyChain,
+        addrReferences,
+        credentials
+      )
+
+      // Check that the transaction is fully-signed.
+      const newCredentials = signed.getCredentials()
+      const hasAllSignatures = newCredentials.every((cred) =>
+        Boolean(cred.sigArray.length)
+      )
+
+      if (!hasAllSignatures) {
+        throw new Error('The transaction is not fully signed')
+      }
+
+      // Broadcast the transaction.
+      const signedHex = signed.toString()
+      const txid = await walletData.sendAvax.ar.issueTx(signedHex)
+
+      return { txid }
+    } catch (err) {
+      console.log('Error in wallet.json/completeTxHex()', err)
       throw err
     }
   }
@@ -578,6 +625,71 @@ class WalletAdapter {
       console.error('Error in getTransaction()')
       throw error
     }
+  }
+
+  async validateIntegrity (offerHex, orderHex) {
+    const walletData = this.avaxWallet
+
+    const offerTx = new walletData.utxos.avm.BaseTx()
+    const offerBuffer = Buffer.from(offerHex, 'hex')
+    offerTx.fromBuffer(offerBuffer)
+
+    const orderTx = new walletData.utxos.avm.Tx()
+    const orderBuffer = Buffer.from(orderHex, 'hex')
+    orderTx.fromBuffer(orderBuffer)
+
+    const offerInputs = offerTx.getIns()
+    const orderInputs = orderTx.getUnsignedTx().getTransaction().getIns()
+
+    // ensure the inputs given in the initial offer are present in the order
+    for (const input of offerInputs) {
+      const utxoid = input.getUTXOID()
+      const included = orderInputs.find(utxo => utxo.getUTXOID() === input.getUTXOID())
+
+      if (!included) {
+        return {
+          valid: false,
+          message: `UTXO ${utxoid} is not present in the order`
+        }
+      }
+    }
+
+    const offerOutputs = offerTx.getOuts()
+    const orderOutputs = orderTx.getUnsignedTx().getTransaction().getOuts()
+    // ensure the outputs stated in the initial offer are present in the order
+    for (const output of offerOutputs) {
+      const { asset, amount, addresses } = this.decodeOutput(output)
+      const included = orderOutputs.find(item => {
+        const orderOut = this.decodeOutput(item)
+
+        return asset === orderOut.asset &&
+          amount === orderOut.amount &&
+          JSON.stringify(addresses) === JSON.stringify(orderOut.addresses)
+      })
+
+      if (!included) {
+        return {
+          valid: false,
+          message: `Missing output with asset '${asset}' to addresses '${addresses}' and amount ${amount}`
+        }
+      }
+    }
+
+    return { valid: true }
+  }
+
+  decodeOutput (output) {
+    const formated = {}
+    formated.asset = this.avaxWallet.bintools.cb58Encode(output.getAssetID())
+    formated.amount = output
+      .getOutput()
+      .getAmount()
+      .toNumber()
+    formated.addresses = output
+      .getOutput()
+      .getAddresses()
+      .map(this.avaxWallet.ava.XChain().addressFromBuffer)
+    return formated
   }
 
   // returns the output that matches the critetia

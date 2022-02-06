@@ -133,9 +133,11 @@ const wallet = {
     }
   },
   createPartialTxHex: () => { },
-  completePartialTxHex: () => { },
+  takePartialTxHex: () => { },
   getTxOut: () => { },
   findTxOut: () => { },
+  validateIntegrity: () => { },
+  completeTxHex: () => { },
   bchWallet: new MockBchWallet(),
   avaxWallet: new AvalancheWallet()
 }

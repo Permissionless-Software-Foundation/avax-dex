@@ -123,8 +123,8 @@ class MockBchWallet {
 }
 
 class AvalancheWallet {
-  constructor() {
-    const avax = new AvaxWallet(null, { noUpdate: false })
+  constructor(keypair) {
+    const avax = new AvaxWallet(keypair, { noUpdate: true })
 
     this.walletInfoPromise = true
     this.tokens = avax.tokens
@@ -134,8 +134,9 @@ class AvalancheWallet {
     this.utxos = avax.utxos
     this.sendAvax = avax.sendAvax
     this.BN = avax.BN
+    this.ar = avax.ar
 
-    this.walletInfo = {
+    this.walletInfo = keypair ? avax.walletInfo : {
       type: 'mnemonic',
       mnemonic: 'stove off mirror shallow rigid language stairs rate mirror other cup aerobic arch brief tower click hand icon parent employ treat animal debate core',
       address: 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd',
@@ -151,7 +152,10 @@ class AvalancheWallet {
     } else {
       this.setUtxos()
     }
+
+    this.ar.issueTx = (baseTx) => 'txid'
   }
+
 
   setUtxos () {
     this.utxos.utxoStore = [

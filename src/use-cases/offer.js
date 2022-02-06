@@ -174,6 +174,25 @@ class OfferLib {
       throw error
     }
   }
+
+  async findOfferByHash (p2wdbHash) {
+    try {
+      if (typeof p2wdbHash !== 'string' || !p2wdbHash) {
+        throw new Error('p2wdbHash must be a string')
+      }
+
+      const offer = await this.OfferModel.findOne({ p2wdbHash })
+
+      if (!offer) {
+        throw new Error('offer not found')
+      }
+
+      return offer.toObject()
+    } catch (err) {
+      console.error('Error in findOffer(): ', err)
+      throw err
+    }
+  }
 }
 
 module.exports = OfferLib
