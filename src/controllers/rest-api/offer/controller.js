@@ -87,7 +87,6 @@ class OfferRESTControllerLib {
 
       // Find the Order.
       const orderEntity = await _this.useCases.order.findOrderByHash(orderHash)
-      console.log(orderEntity)
       const offerEntity = await _this.useCases.offer.findOfferByHash(orderEntity.offerHash)
 
       // 'Take' the Order.

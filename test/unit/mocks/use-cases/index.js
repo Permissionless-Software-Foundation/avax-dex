@@ -44,6 +44,9 @@ class Offer {
   async listOffers () {
     return {}
   }
+  async findOfferByHash() {
+    return {}
+  }
 }
 
 class Order {
@@ -59,8 +62,13 @@ class Order {
   async takeOrder () {
     return {}
   }
-
+  async findOrderByHash() {
+    return {}
+  }
   async checkTakenOrder () {
+    return {}
+  }
+  async completeOrder() {
     return {}
   }
 }

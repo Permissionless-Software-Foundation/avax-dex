@@ -406,7 +406,8 @@ class WalletAdapter {
   async completeTxHex (txHex, addrReferences, hdIndex) {
     try {
       const keyPair = await this.getAvaxKeyPair(hdIndex)
-      const walletData = new AvaxWallet(keyPair.getPrivateKeyString(), { noUpdate: true })
+      const walletData = new this.AvaxWallet(keyPair.getPrivateKeyString(), { noUpdate: true })
+      await walletData.walletInfoPromise
 
       // Parse the partially signed transaction
       const halfSignedTx = new walletData.utxos.avm.Tx()
@@ -438,11 +439,11 @@ class WalletAdapter {
         throw new Error('The transaction is not fully signed')
       }
 
-      // const signedHex = signed.toString()
       // Broadcast the transaction.
-      // const txid = await walletData.sendAvax.ar.issueTx(signedHex)
+      const signedHex = signed.toString()
+      const txid = await walletData.sendAvax.ar.issueTx(signedHex)
 
-      return { txid: 'some txid' }
+      return { txid }
     } catch (err) {
       console.log('Error in wallet.json/completeTxHex()', err)
       throw err

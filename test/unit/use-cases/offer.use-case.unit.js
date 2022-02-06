@@ -279,4 +279,72 @@ describe('#offer-use-case', () => {
       }
     })
   })
+
+  describe('#findOfferByHash', () => {
+    it('should return an offer by a given p2wdb hash', async () => {
+      sandbox.stub(uut.OfferModel, 'findOne').resolves({
+        toObject: () => ({
+          _id: '61d8c3b6faabfd0d5f18cae7',
+          messageType: 1,
+          messageClass: 1,
+          tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          buyOrSell: 'sell',
+          rateInSats: '1000',
+          minSatsToExchange: '10',
+          numTokens: 21,
+          utxoTxid: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          utxoVout: 1,
+          txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000000003e8000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a100000001a045bd411acbb02ab31b1ac9a29cbd9e27001d5940a9291fc053d7683e716afc00000001f808d594b0360d20f7b4214bdb51a773d0f5eb34c5157eea285fefa5a86f5e16000000050000000000000834000000010000000000000000',
+          addrReferences: '{"2Dawk4kFbEj5dmKcaEoZvmTfrWUcUFN22oEwMt1GByqMatzZbN":"X-avax1n72fnh2y2v56h5k8q08yze63yuykkkmxjqycf3"}',
+          hdIndex: 3,
+          p2wdbHash: 'zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE'
+        })
+      })
+
+      const offer = await uut.findOfferByHash('zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE')
+
+      assert.hasAllKeys(offer, [
+        '_id',
+        'messageType',
+        'messageClass',
+        'tokenId',
+        'buyOrSell',
+        'rateInSats',
+        'minSatsToExchange',
+        'numTokens',
+        'utxoTxid',
+        'utxoVout',
+        'txHex',
+        'addrReferences',
+        'hdIndex',
+        'p2wdbHash'
+      ])
+    })
+
+    it('should throw an error if the given hash is not a string', async () => {
+      const consoleSpy = sandbox.spy(global.console, 'error')
+      const findSpy = sandbox.spy(uut.OfferModel, 'findOne')
+
+      try {
+        await uut.findOfferByHash()
+      } catch (error) {
+        assert.include(error.message, 'p2wdbHash must be a string')
+        assert.isTrue(consoleSpy.called)
+        assert.isTrue(findSpy.notCalled)
+      }
+    })
+
+    it('should throw an error if the given hash doesnt match any offer', async () => {
+      const consoleSpy = sandbox.spy(global.console, 'error')
+      const findSpy = sandbox.stub(uut.OfferModel, 'findOne')
+      findSpy.resolves(null)
+      try {
+        await uut.findOfferByHash('zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE')
+      } catch (error) {
+        assert.include(error.message, 'offer not found')
+        assert.isTrue(consoleSpy.called)
+        assert.isTrue(findSpy.called)
+      }
+    })
+  })
 })

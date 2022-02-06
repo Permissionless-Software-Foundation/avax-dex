@@ -125,7 +125,7 @@ class OrderUseCases {
 
       // Ensure the order is in a 'taken' state and not already 'completed' or just 'posted'
       if (orderStatus && orderStatus !== 'taken') {
-        throw new Error('order already taken')
+        throw new Error('orderStatus must be taken')
       }
 
       // Prepare to write to the P2WDB.
@@ -152,12 +152,11 @@ class OrderUseCases {
       entryObj.orderStatus = 'accepted'
 
       // Write the updated order information to the P2WDB.
-      const hash = 'asdasd'
-      // await this.adapters.p2wdb.write({
-      //   wif: this.adapters.wallet.bchWallet.walletInfo.privateKey,
-      //   data: entryObj,
-      //   appId: 'swapTest555'
-      // })
+      const hash = await this.adapters.p2wdb.write({
+        wif: this.adapters.wallet.bchWallet.walletInfo.privateKey,
+        data: entryObj,
+        appId: 'swapTest555'
+      })
 
       return { txid, hash }
     } catch (error) {
@@ -168,6 +167,10 @@ class OrderUseCases {
 
   async findOrderByHash (p2wdbHash) {
     try {
+      if (typeof p2wdbHash !== 'string' || !p2wdbHash) {
+        throw new Error('p2wdbHash must be a string')
+      }
+
       const order = await this.OrderModel.findOne({ p2wdbHash })
 
       if (!order) {
