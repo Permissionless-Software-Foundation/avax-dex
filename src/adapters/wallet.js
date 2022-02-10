@@ -195,6 +195,7 @@ class WalletAdapter {
       // TODO: throw error if wallet data is not passed in.
 
       const advancedConfig = {
+        noUpdate: process.env.AVAX_DEX === 'test',
         restURL: bchjs.restURL,
         apiToken: bchjs.apiToken
       }
@@ -220,9 +221,9 @@ class WalletAdapter {
           'walletData must be an object with the wallet information'
         )
       }
-
+      const advancedConfig = { noUpdate: process.env.AVAX_DEX === 'test' }
       // Instantiate minimal-avax-wallet.
-      this.avaxWallet = new this.AvaxWallet(walletData.mnemonic)
+      this.avaxWallet = new this.AvaxWallet(walletData.mnemonic, advancedConfig)
 
       // Wait for wallet to initialize.
       await this.avaxWallet.walletInfoPromise
@@ -247,6 +248,7 @@ class WalletAdapter {
 
       // take just the first utxo as input, since it's a single utxo address
       const addrReferences = {}
+
       const address = tokenWallet.walletInfo.address
 
       const [tokenUtxo] = tokenWallet.utxos.utxoStore
