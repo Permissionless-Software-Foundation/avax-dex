@@ -14,9 +14,9 @@ async function start () {
   try {
     const options = {
       method: 'post',
-      url: `${LOCALHOST}/offer/accept`,
+      url: `${LOCALHOST}/order/take`,
       data: {
-        hash: 'zdpuB1yPwL9FdpvtD5rP7b2Pk77ZdNNVzn2hG2KEvYmij1UE2'
+        orderId: '62098afa341177e834d44c02'
       }
     }
 

@@ -505,7 +505,6 @@ class WalletAdapter {
     for (let i = 0; i < utxos.length; i++) {
       const thisUTXO = utxos[i]
 
-      console.log(total, thisUTXO.amount)
       if (thisUTXO.amount < total) {
         continue
       }

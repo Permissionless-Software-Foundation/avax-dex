@@ -56,7 +56,7 @@ class OfferLib {
       offerEntity.utxoVout = utxoInfo.vout
       offerEntity.txHex = partialTx.txHex
       offerEntity.addrReferences = partialTx.addrReferences
-      offerEntity.hdIndex = 3
+      offerEntity.hdIndex = addressInfo.hdIndex
 
       // Add offer to P2WDB.
       const hash = await this.adapters.p2wdb.write({
