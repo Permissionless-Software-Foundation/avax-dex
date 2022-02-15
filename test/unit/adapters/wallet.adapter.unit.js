@@ -402,6 +402,7 @@ describe('#wallet', () => {
     it('should return a partial transaction with a different address', async () => {
       // mock instance of minimal-avax-wallet
       uut.avaxWallet = new AvalancheWallet()
+      uut.AvaxWallet = AvalancheWallet
 
       const result = await uut.createPartialTxHex(10000, uut.avaxWallet.walletInfo.privateKey)
 
@@ -411,12 +412,12 @@ describe('#wallet', () => {
         '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
         '4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
         '7dff000000070000000000002710000000000000000000000001000000012a911a32b2' +
-        'dcfa390b020b406131df356b84a2a1000000015bdf7b977813f604ac5c285f4571db90' +
-        '6afdf4e1197e2a39e9284a73976e269100000002f808d594b0360d20f7b4214bdb51a7' +
-        '73d0f5eb34c5157eea285fefa5a86f5e16000000050000000000011d1f000000010000' +
+        'dcfa390b020b406131df356b84a2a1000000010552889bec3957677061bae1c8a57966' +
+        '895fce73bd3e2c66efd53d981b9b5fa000000001e49b53ab21c6f7b10bf8efb3e3bc00' +
+        '59954989b3d481a9cb862f4b0b7d57c645000000050000000000000001000000010000' +
         '000000000000'
       )
-      assert.equal(result.addrReferences, '{"hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhKhuaa5":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
+      assert.equal(result.addrReferences, '{"3LxJXtS6FYkSpcRLPu1EeGZDdFBY41J4YxH1Nwohxs2cj8svY":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}')
     })
 
     it('should handle an throw error', async () => {
