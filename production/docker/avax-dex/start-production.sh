@@ -26,6 +26,6 @@ export PORT=5700
 # avax-dex specific env vars
 export AVAX_DEX_ENV=production
 export WEBHOOKSERVICE=http://172.17.0.1:5667/webhook
-export WEBHOOKTARGET=http://172.17.0.1:5110/order
+export WEBHOOKTARGET=http://172.17.0.1:5700/order
 
 npm start
