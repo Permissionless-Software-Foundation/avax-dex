@@ -21,7 +21,7 @@ export DEBUG_LEVEL=2
 export DBURL=mongodb://172.17.0.1:5666/swap-service-prod
 
 # Configure REST API port
-export PORT=5700
+export PORT=5110
 
 # avax-dex specific env vars
 export AVAX_DEX_ENV=production
