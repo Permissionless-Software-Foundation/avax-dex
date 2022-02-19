@@ -17,23 +17,21 @@ async function start () {
       data: {
         messageType: 1,
         messageClass: 1,
-        tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
         buyOrSell: 'sell',
-        rateInSats: 1000,
+        rateInSats: 3000000,
         minSatsToExchange: 10,
-        numTokens: 1,
-        utxoTxid: 'BkKisuEF3dM6ftMJb44G9U4B8UMxr3jxz1CZhdMrTfWtZWv4i',
+        numTokens: 1.7,
+        utxoTxid: '2HHYCuAfLhqUtiKsNdK9rsasfmHbJFLW8igri4Hb61hdBvYpyN',
         utxoVout: 1,
-        txHex:
-          '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000000003e8000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a1000000011866fa083333eb3c699ff465aafbeb22026061d69ae149c262b1df9f70da48d300000001f808d594b0360d20f7b4214bdb51a773d0f5eb34c5157eea285fefa5a86f5e16000000050000000000000064000000010000000000000000',
-        addrReferences:
-          '{"BkKisuEF3dM6ftMJb44G9U4B8UMxr3jxz1CZhdMrTfWqwEugt":"X-avax1r6azu6cegjevcqr070wy4zhvvxkp0x79mmhpwk"}',
-        hdIndex: 3
+        txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000002dc6c000000000000000000000000100000001899c60081d331395dc13f93149f3ddc6ab7d559b00000001a8ac6a1a0a433325076c7a30a73ce7cb670c6cf0246f312ac23eb9e0a03f51fa00000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c6450000000500000000000000aa000000010000000000000000',
+        addrReferences: '{"2HHYCuAfLhqUtiKsNdK9rsasfmHbJFLW8igri4Hb61hdAYsh12":"X-avax12jl70wc45qxqk2xk4wt7hv7ev5veea5e2vgt8g"}',
+        hdIndex: 1
       },
       timestamp: '2022-01-18T05:43:57.471Z',
       localTimeStamp: '1/18/2022, 1:43:57 AM',
-      txid: '9d72dd8b44ae992e17b8234843158528b12d81b1f7795521d7e3d164b6ea8f14',
-      hash: 'zdpuAwtg2JUHFGS5nr5NztM2LXDteTPPHUBxiEJiLHyRdHUnN'
+      hash: 'zdpuAzFjM9oPCwXW5U2GD7bxQARY4fVziH1x1cESqyLFt6Xo2',
+      txid: '9d72dd8b44ae992e17b8234843158528b12d81b1f7795521d7e3d164b6ea8f14'
     }
 
     const options = {
