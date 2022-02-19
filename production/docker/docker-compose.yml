@@ -79,7 +79,26 @@ services:
       - mongo-ipfs-service
       - p2wdb
     ports:
-      - '5110:5110' # <host port>:<container port>
+      - '5700:5700' # <host port>:<container port>
     # volumes:
     #   - ../data/ipfsdata:/home/safeuser/ipfs-service-provider/.ipfsdata
-    restart: always
+    #restart: always
+
+  dex-ui:
+    build:
+      context: ./avax-dex-ui/
+      dockerfile: Dockerfile
+    container_name: dex-ui
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '10'
+    mem_limit: 500mb
+    links:
+      - avax-dex
+    ports:
+      - '4500:80' # <host port>:<container port>
+    # volumes:
+    #   - ../data/ipfsdata:/home/safeuser/ipfs-service-provider/.ipfsdata
+    #restart: always

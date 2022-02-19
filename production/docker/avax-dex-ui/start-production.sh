@@ -21,11 +21,11 @@ export DEBUG_LEVEL=2
 export DBURL=mongodb://172.17.0.1:5666/swap-service-prod
 
 # Configure REST API port
-export PORT=5700
+export PORT=5110
 
 # avax-dex specific env vars
 export AVAX_DEX_ENV=production
 export WEBHOOKSERVICE=http://172.17.0.1:5667/webhook
-export WEBHOOKTARGET=http://172.17.0.1:5700/order
+export WEBHOOKTARGET=http://172.17.0.1:5110/order
 
 npm start
