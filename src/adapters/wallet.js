@@ -236,7 +236,7 @@ class WalletAdapter {
   }
 
   // Make offer Tx
-  async createPartialTxHex (avaxAmount, privateKey) {
+  async createPartialTxHex (orderInfo, privateKey) {
     try {
       let tokenWallet = this.avaxWallet
 
@@ -248,20 +248,19 @@ class WalletAdapter {
 
       // take just the first utxo as input, since it's a single utxo address
       const addrReferences = {}
-
       const address = tokenWallet.walletInfo.address
 
-      const [tokenUtxo] = tokenWallet.utxos.utxoStore
-      const tokenInput = tokenWallet.utxos.encodeUtxo(tokenUtxo, address)
-      const inputs = [tokenInput]
-      const utxoID = tokenInput.getUTXOID()
+      const [inputUtxo] = tokenWallet.utxos.utxoStore
+      const txInput = tokenWallet.utxos.encodeUtxo(inputUtxo, address)
+      const inputs = [txInput]
+      const utxoID = txInput.getUTXOID()
       addrReferences[utxoID] = address
 
       // get the desired asset outputs for the transaction
-      const avaxOutput = tokenWallet.utxos.formatOutput({
-        amount: avaxAmount,
+      const txOutput = tokenWallet.utxos.formatOutput({
+        amount: orderInfo.amount,
         address: this.avaxWallet.walletInfo.address,
-        assetID: tokenWallet.sendAvax.avaxID
+        assetID: orderInfo.assetID
       })
 
       // Build the transcation
@@ -270,7 +269,7 @@ class WalletAdapter {
         tokenWallet.bintools.cb58Decode(
           tokenWallet.tokens.xchain.getBlockchainID()
         ),
-        [avaxOutput],
+        [txOutput],
         inputs
       )
 
@@ -691,6 +690,23 @@ class WalletAdapter {
       .getAddresses()
       .map(this.avaxWallet.ava.XChain().addressFromBuffer)
     return formated
+  }
+
+  async getAmountInSats (assetID, amount) {
+    try {
+      let asset = this.avaxWallet.utxos.assets.find(item => item.assetID === assetID)
+      // if asset is not present in the wallet
+      // get the info from the node
+      if (!asset) {
+        asset = await this.avaxWallet.ava.XChain().getAssetDescription(assetID)
+      }
+
+      // Turn token into sats
+      return amount * Math.pow(10, asset.denomination)
+    } catch (error) {
+      console.error('Error in getAmountInSats(): ', error)
+      throw error
+    }
   }
 
   // returns the output that matches the critetia

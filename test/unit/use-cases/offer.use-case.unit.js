@@ -49,7 +49,7 @@ describe('#offer-use-case', () => {
   })
 
   describe('#createOffer', () => {
-    it('should create an offer and return the hash', async () => {
+    it('should create a sell offer and return the hash', async () => {
       const entryObj = {
         lokadId: 'SWP',
         messageType: 1,
@@ -65,7 +65,8 @@ describe('#offer-use-case', () => {
 
       // Mock dependencies
       sandbox.stub(uut.offerEntity, 'validate').returns(entryObj)
-      sandbox.stub(uut, 'ensureFunds').resolves()
+      sandbox.stub(uut.adapters.wallet, 'getAmountInSats').resolves(100)
+      const ensureStub = sandbox.stub(uut, 'ensureFunds').resolves()
       sandbox.stub(uut.adapters.p2wdb, 'checkForSufficientFunds').resolves()
       sandbox.stub(uut, 'getAddress').resolves(newAddress)
       sandbox.stub(uut, 'moveTokens').resolves({ txid: 'fakeTxid', vout: '000000' })
@@ -87,6 +88,58 @@ describe('#offer-use-case', () => {
 
       assert.isString(result)
       assert.equal(result, 'fakeHash')
+
+      const [offered, isForSale] = ensureStub.args[0]
+      assert.isTrue(isForSale) // check if sell as buy offer
+      assert.equal(offered.assetID, entryObj.tokenId)
+      assert.equal(offered.amount, 100)
+    })
+
+    it('should create a buy offer and return the hash', async () => {
+      const entryObj = {
+        lokadId: 'SWP',
+        messageType: 1,
+        messageClass: 1,
+        tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+        buyOrSell: 'buy',
+        rateInSats: 2000000,
+        minSatsToExchange: 10,
+        numTokens: 0.5
+      }
+
+      const newAddress = await uut.getAddress(1)
+
+      // Mock dependencies
+      sandbox.stub(uut.offerEntity, 'validate').returns(entryObj)
+      sandbox.stub(uut.adapters.wallet, 'getAmountInSats').resolves(50)
+      const ensureStub = sandbox.stub(uut, 'ensureFunds').resolves()
+      sandbox.stub(uut.adapters.p2wdb, 'checkForSufficientFunds').resolves()
+      sandbox.stub(uut, 'getAddress').resolves(newAddress)
+      sandbox.stub(uut, 'moveTokens').resolves({ txid: 'fakeTxid', vout: '000000' })
+      sandbox.stub(uut.adapters.wallet, 'createPartialTxHex').resolves({
+        txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
+          '4b00000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57' +
+          'c64500000007000000000000003200000000000000000000000100000001899c60081d' +
+          '331395dc13f93149f3ddc6ab7d559b00000001bb94cee441f3f9ef21d6201251043f7f' +
+          '08ee9936d0c2de7d1e2439f2c00837d00000000021e67317cbc4be2aeb00677ad64627' +
+          '78a8f52274b9d605df2591b23027a87dff0000000500000000002dc6c0000000010000' +
+          '000000000000',
+        addrReferences: '{"2RcWhf6FfmRkBbnAfzDvty21B7n5ki8k5Ku9M2th8WktusRdL3":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}'
+      })
+      sandbox.stub(uut.adapters.p2wdb, 'write').resolves('fakeHash')
+      sandbox
+        .stub(uut.adapters.wallet.bchWallet.bchjs.Util, 'sleep')
+        .resolves()
+
+      const result = await uut.createOffer(entryObj)
+
+      assert.isString(result)
+      assert.equal(result, 'fakeHash')
+
+      const [offered, isForSale] = ensureStub.args[0]
+      assert.isFalse(isForSale) // check if taken as buy offer
+      assert.equal(offered.assetID, 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z')
+      assert.equal(offered.amount, 2000000)
     })
 
     it('should catch and throw an error', async () => {
@@ -107,96 +160,112 @@ describe('#offer-use-case', () => {
 
   describe('#ensureFunds', () => {
     it('should return true if wallet has enough funds for a sell order', async () => {
-      const offerEntity = {
-        lokadId: 'SWP',
-        messageType: 1,
-        messageClass: 1,
-        tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        buyOrSell: 'sell',
-        rateInSats: 1000,
-        minSatsToExchange: 0,
-        numTokens: 1
+      const isForSale = true
+      const offered = {
+        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+        amount: 200
       }
 
-      const result = await uut.ensureFunds(offerEntity)
+      const result = await uut.ensureFunds(offered, isForSale)
+
+      assert.equal(result, true)
+    })
+
+    it('should return true if wallet has enough funds for a buy order', async () => {
+      const isForSale = false
+      const offered = {
+        assetID: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z',
+        amount: 2000000
+      }
+
+      const result = await uut.ensureFunds(offered, isForSale)
 
       assert.equal(result, true)
     })
 
     it('should throw an error if the wallet doesnt have enough tokens', async () => {
       try {
-        const offerEntity = {
-          lokadId: 'SWP',
-          messageType: 1,
-          messageClass: 1,
-          tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-          buyOrSell: 'sell',
-          rateInSats: 1000,
-          minSatsToExchange: 0,
-          numTokens: 4
+        const isForSale = true
+        const offered = {
+          assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+          amount: 400
         }
-        await uut.ensureFunds(offerEntity)
+        await uut.ensureFunds(offered, isForSale)
         assert.fail('unexpected result')
       } catch (error) {
-        assert.include(error.message, 'App wallet does not have enough tokens to satisfy the SELL offer')
+        assert.include(error.message, 'App wallet does not have enough tokens to satisfy the offer')
       }
-    })
-
-    it('should return true if buy', async () => {
-      const offerEntity = { buyOrSell: 'buy' }
-      const result = await uut.ensureFunds(offerEntity)
-
-      assert.equal(result, true)
     })
   })
 
   describe('#moveTokens', () => {
     it('should move tokens to the holding address', async () => {
-      const offerEntity = {
-        lokadId: 'SWP',
-        messageType: 1,
-        messageClass: 1,
-        tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        buyOrSell: 'sell',
-        rateInSats: 1000,
-        minSatsToExchange: 0,
-        numTokens: 1
+      const isForSale = true
+      const offered = {
+        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+        amount: 200
       }
 
       const walletInfo = await uut.getAddress(1)
 
-      sandbox.stub(uut.adapters.wallet.avaxWallet, 'send').resolves('fakeTxid')
-      sandbox.stub(uut.adapters.wallet, 'findTxOut').resolves({ vout: 1 })
+      const sendStub = sandbox.stub(uut.adapters.wallet.avaxWallet, 'send').resolves('fakeTxid')
+      sandbox.stub(uut.adapters.wallet, 'findTxOut').resolves({ vout: 0 })
 
-      const result = await uut.moveTokens(offerEntity, walletInfo)
+      const result = await uut.moveTokens(offered, walletInfo, isForSale)
       // console.log('result: ', result)
 
       assert.property(result, 'txid')
       assert.property(result, 'vout')
 
       assert.equal(result.txid, 'fakeTxid')
-      assert.equal(result.vout, 1)
+      assert.equal(result.vout, 0)
+
+      const { address, amount, assetID } = sendStub.args[0][0][0]
+      assert.equal(address, walletInfo.address)
+      assert.equal(amount, 200)
+      assert.equal(assetID, offered.assetID)
+    })
+
+    it('should add the fee when it\'s a buy offer', async () => {
+      const isForSale = false
+      const offered = {
+        assetID: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z',
+        amount: 2000000
+      }
+
+      const walletInfo = await uut.getAddress(1)
+
+      const sendStub = sandbox.stub(uut.adapters.wallet.avaxWallet, 'send').resolves('fakeTxid')
+      sandbox.stub(uut.adapters.wallet, 'findTxOut').resolves({ vout: 0 })
+
+      const result = await uut.moveTokens(offered, walletInfo, isForSale)
+      // console.log('result: ', result)
+
+      assert.property(result, 'txid')
+      assert.property(result, 'vout')
+
+      assert.equal(result.txid, 'fakeTxid')
+      assert.equal(result.vout, 0)
+
+      const { address, amount, assetID } = sendStub.args[0][0][0]
+      assert.equal(address, walletInfo.address)
+      assert.equal(amount, 3000000)
+      assert.equal(assetID, offered.assetID)
     })
 
     it('should catch an error', async () => {
       sandbox.stub(uut.adapters.wallet.avaxWallet, 'send').rejects(
         new Error('intended error')
       )
-
-      const offerEntity = {
-        lokadId: 'SWP',
-        messageType: 1,
-        messageClass: 1,
-        tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        buyOrSell: 'sell',
-        rateInSats: 1000,
-        minSatsToExchange: 0,
-        numTokens: 1
+      const isForSale = true
+      const offered = {
+        assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+        amount: 200
       }
 
       try {
         const walletInfo = await uut.getAddress(1)
-        await uut.moveTokens(offerEntity, walletInfo)
+        await uut.moveTokens(offered, walletInfo, isForSale)
         assert.fail('unexpected result')
       } catch (error) {
         assert.include(error.message, 'intended error')

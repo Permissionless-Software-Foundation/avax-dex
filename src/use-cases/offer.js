@@ -28,8 +28,22 @@ class OfferLib {
       // Input Validation
       const offerEntity = this.offerEntity.validate(entryObj)
 
+      const isForSale = offerEntity.buyOrSell.includes('sell')
+      offerEntity.tokenInSats = await this.adapters.wallet.getAmountInSats(
+        offerEntity.tokenId,
+        offerEntity.numTokens
+      )
+      // Initially tokens are given and avax will be taken in return
+      let offered = { amount: offerEntity.tokenInSats, assetID: offerEntity.tokenId }
+      let ordered = { amount: offerEntity.rateInSats, assetID: this.adapters.wallet.avaxWallet.sendAvax.avaxID }
+
+      // Swap them in buy as avax is given and token will be taken in return
+      if (!isForSale) {
+        [offered, ordered] = [ordered, offered]
+      }
+
       // Ensure sufficient AVAX tokens exist to create the offer.
-      await this.ensureFunds(offerEntity)
+      await this.ensureFunds(offered, isForSale)
 
       // Ensure BCH wallet has finished initializing
       await this.adapters.wallet.bchWallet.walletInfoPromise
@@ -41,13 +55,13 @@ class OfferLib {
 
       // Move the tokens to holding address.
       const addressInfo = await this.getAddress()
-      const utxoInfo = await this.moveTokens(offerEntity, addressInfo)
+      const utxoInfo = await this.moveTokens(offered, addressInfo, isForSale)
       console.log('utxoInfo: ', utxoInfo)
 
       // create partial tx with the token inputs and avax output
       await this.adapters.wallet.bchWallet.bchjs.Util.sleep(3000)
       const partialTx = await this.adapters.wallet.createPartialTxHex(
-        offerEntity.rateInSats,
+        ordered,
         addressInfo.privateKey
       )
 
@@ -88,19 +102,21 @@ class OfferLib {
   // Move the tokens indicated in the offer to a temporary holding address.
   // This will generate the UTXO used in the Signal message. This function
   // moves the funds and returns the UTXO information.
-  async moveTokens (offerEntity, addressInfo) {
+  async moveTokens (offered, addressInfo, isForSale) {
     try {
       console.log('addressInfo: ', addressInfo)
+      const assetID = offered.assetID
+      let amount = offered.amount
 
-      // Turn token into sats
-      const assets = this.adapters.wallet.avaxWallet.utxos.assets
-      const asset = assets.find(item => item.assetID === offerEntity.tokenId)
-      const amount = offerEntity.numTokens * Math.pow(10, asset.denomination)
+      if (!isForSale) {
+        const txFee = this.adapters.wallet.avaxWallet.tokens.xchain.getTxFee()
+        amount = txFee.addn(offered.amount).toNumber()
+      }
 
       const receiver = {
         address: addressInfo.address,
         amount,
-        assetID: offerEntity.tokenId
+        assetID
       }
 
       // Broadcast the transaction to move the tokens.
@@ -120,25 +136,24 @@ class OfferLib {
   }
 
   // Ensure that the wallet has enough AVAX and tokens to complete the trade.
-  async ensureFunds (offerEntity) {
+  async ensureFunds (offered, isForSale) {
     try {
+      let { amount, assetID } = offered
+
+      // Calculate spendings taking into account fees
+      if (!isForSale) {
+        const txFee = this.adapters.wallet.avaxWallet.tokens.xchain.getTxFee()
+        amount = txFee.muln(2).addn(amount).toNumber()
+      }
+
       // Get Assets.
       const assets = this.adapters.wallet.avaxWallet.utxos.assets
+      const asset = assets.find(item => item.assetID === assetID)
 
-      // Sell Offer
-      if (offerEntity.buyOrSell.includes('sell')) {
-        const asset = assets.find(item => item.assetID === offerEntity.tokenId)
-
-        // Turn token into sats
-        const denomination = asset?.denomination || 0
-        const amount = offerEntity.numTokens * Math.pow(10, denomination)
-        if (!asset || asset.amount < amount) {
-          throw new Error(
-            'App wallet does not have enough tokens to satisfy the SELL offer.'
-          )
-        }
-      } else {
-        // Buy Offer
+      if (!asset || asset.amount < amount) {
+        throw new Error(
+          'App wallet does not have enough tokens to satisfy the offer.'
+        )
       }
 
       return true

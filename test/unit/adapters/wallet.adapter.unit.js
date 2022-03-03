@@ -403,8 +403,11 @@ describe('#wallet', () => {
       // mock instance of minimal-avax-wallet
       uut.avaxWallet = new AvalancheWallet()
       uut.AvaxWallet = AvalancheWallet
-
-      const result = await uut.createPartialTxHex(10000, uut.avaxWallet.walletInfo.privateKey)
+      const orderInfo = {
+        amount: 10000,
+        assetID: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
+      }
+      const result = await uut.createPartialTxHex(orderInfo, uut.avaxWallet.walletInfo.privateKey)
 
       assert.hasAllKeys(result, ['txHex', 'addrReferences'])
       assert.equal(
@@ -424,8 +427,13 @@ describe('#wallet', () => {
       // mock instance of minimal-avax-wallet
       uut.avaxWallet = new AvalancheWallet()
       uut.avaxWallet.utxos.utxoStore = []
+      const orderInfo = {
+        amount: 10000,
+        assetID: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
+      }
+
       try {
-        await uut.createPartialTxHex(10000)
+        await uut.createPartialTxHex(orderInfo)
         assert.fail('unexpected result')
       } catch (err) {
         assert.include(err.message, 'Cannot read property')
@@ -435,8 +443,12 @@ describe('#wallet', () => {
     it('should return a partial transaction as hex string and the address reference', async () => {
       // mock instance of minimal-avax-wallet
       uut.avaxWallet = new AvalancheWallet()
+      const orderInfo = {
+        amount: 10000,
+        assetID: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
+      }
 
-      const result = await uut.createPartialTxHex(10000)
+      const result = await uut.createPartialTxHex(orderInfo)
 
       assert.hasAllKeys(result, ['txHex', 'addrReferences'])
       assert.equal(
@@ -775,6 +787,55 @@ describe('#wallet', () => {
       const res = await uut.validateIntegrity(offerHex, orderHex)
       assert.isTrue(res.valid)
       assert.isTrue(res.message === undefined)
+    })
+  })
+
+  describe('#getAmountInSats', () => {
+    it('should return the amount using the assets in the wallet', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+
+      const descriptionStub = sandbox.stub().resolves({ denomination: 2 })
+      sandbox.stub(uut.avaxWallet.ava, 'XChain').returns({
+        getAssetDescription: descriptionStub
+      })
+
+      const res = await uut.getAmountInSats('2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5', 2)
+
+      assert.equal(res, 200)
+      assert.isTrue(descriptionStub.notCalled)
+    })
+
+    it('should return the amount fetching the asset details from the node', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+      uut.avaxWallet.utxos.assets = []
+
+      const descriptionStub = sandbox.stub().resolves({ denomination: 2 })
+      sandbox.stub(uut.avaxWallet.ava, 'XChain').returns({
+        getAssetDescription: descriptionStub
+      })
+
+      const res = await uut.getAmountInSats('2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5', 2)
+
+      assert.equal(res, 200)
+      assert.isTrue(descriptionStub.called)
+      assert.isTrue(descriptionStub.calledWith('2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'))
+    })
+
+    it('should throw an error', async () => {
+      uut.avaxWallet = new AvalancheWallet()
+      uut.avaxWallet.utxos.assets = []
+
+      const descriptionStub = sandbox.stub().rejects(new Error('internal error'))
+      sandbox.stub(uut.avaxWallet.ava, 'XChain').returns({
+        getAssetDescription: descriptionStub
+      })
+
+      try {
+        await uut.getAmountInSats('2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5', 2)
+        assert.fail('unexpected result')
+      } catch (error) {
+        assert.include(error.message, 'internal error')
+      }
     })
   })
 })
