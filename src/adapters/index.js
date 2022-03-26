@@ -52,10 +52,11 @@ class Adapters {
     this.nodemailer = new Nodemailer()
     this.jsonFiles = new JSONFiles()
     this.bchjs = new BCHJS()
+    localConfig.bchjs = this.bchjs
     this.bch = new BCHAdapter()
     this.config = config
     this.wallet = new WalletAdapter()
-    this.p2wdb = new P2wdbAdapter()
+    this.p2wdb = new P2wdbAdapter(localConfig)
 
     // Get a valid JWT API key and instance bch-js.
     this.fullStackJwt = new FullStackJWT(config)
