@@ -138,6 +138,7 @@ const wallet = {
   findTxOut: () => { },
   validateIntegrity: () => { },
   completeTxHex: () => { },
+  getAmountInSats: () => { },
   bchWallet: new MockBchWallet(),
   avaxWallet: new AvalancheWallet()
 }

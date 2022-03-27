@@ -19,7 +19,7 @@ async function start () {
       messageType: 1,
       messageClass: 1,
       tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-      buyOrSell: 'sell',
+      buyOrSell: 'sell', // or buy
       rateInSats: 3000000,
       minSatsToExchange: 10,
       numTokens: 1.7
