@@ -150,6 +150,7 @@ async function getAdminJWT () {
     // console.log(`env: ${process.env.KOA_ENV}`)
 
     const FILENAME = `../../config/system-user-${config.env}.json`
+    // const FILENAME = '../../config/system-user-dev.json'
     const adminUserData = require(FILENAME)
     // console.log(`adminUserData: ${JSON.stringify(adminUserData, null, 2)}`)
 

@@ -145,7 +145,7 @@ describe('#wallet', () => {
     })
   })
 
-  describe('#instanceWallet', () => {
+  describe('#instanceBchWallet', () => {
     it('should create an instance of BchWallet', async () => {
       // Mock dependencies
       uut.BchWallet = MockBchWallet
@@ -160,19 +160,19 @@ describe('#wallet', () => {
 
       const walletData = await uut.openWallet()
 
-      const result = await uut.instanceWallet(walletData.mnemonic, bchjs)
+      const result = await uut.instanceBchWallet(walletData.mnemonic, bchjs)
 
       assert.equal(result, true)
     })
 
     it('should catch and throw an error', async () => {
       try {
-        await uut.instanceWallet()
+        await uut.instanceBchWallet()
 
         assert.fail('Unexpected code path')
       } catch (err) {
         // console.log('err: ', err)
-        assert.include(err.message, 'Cannot read property')
+        assert.include(err.message, 'Cannot read')
       }
     })
   })
@@ -268,7 +268,7 @@ describe('#wallet', () => {
 
         assert.fail('Unexpected code path')
       } catch (err) {
-        assert.include(err.message, 'Cannot read property')
+        assert.include(err.message, 'Cannot read')
       }
     })
   })
@@ -428,7 +428,7 @@ describe('#wallet', () => {
         await uut.createPartialTxHex(10000)
         assert.fail('unexpected result')
       } catch (err) {
-        assert.include(err.message, 'Cannot read property')
+        assert.include(err.message, 'Cannot read')
       }
     })
 

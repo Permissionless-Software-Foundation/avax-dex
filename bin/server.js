@@ -117,7 +117,7 @@ class Server {
       }
 
       // startServer()
-      await app.listen(config.port)
+      this.server = await app.listen(config.port)
       console.log(`Server started on ${config.port}`)
 
       // Create the system admin user.
