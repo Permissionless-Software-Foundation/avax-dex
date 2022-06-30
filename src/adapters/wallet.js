@@ -11,7 +11,7 @@ const { Signature } = require('avalanche/dist/common/credentials')
 // Local libraries
 const JsonFiles = require('./json-files')
 
-const WALLET_FILE = `${__dirname.toString()}/../../wallet.json`
+const WALLET_FILE = `${__dirname.toString()}/../../wallet-bch.json`
 const AVAX_WALLET_FILE = `${__dirname.toString()}/../../wallet-avax.json`
 const PROOF_OF_BURN_QTY = 0.01
 const P2WDB_TOKEN_ID =
