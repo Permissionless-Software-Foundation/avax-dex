@@ -189,16 +189,17 @@ class WalletAdapter {
   // BCH-specific
   // Create an instance of minimal-slp-wallet. Use data in the wallet.json file,
   // and pass the bch-js information to the minimal-slp-wallet library.
-  async instanceWallet (walletData, bchjs) {
+  async instanceBchWallet (walletData, bchjs) {
     try {
       // TODO: Throw error if bch-js is not passed in.
       // TODO: throw error if wallet data is not passed in.
 
-      const advancedConfig = {
-        noUpdate: process.env.AVAX_DEX === 'test',
-        restURL: bchjs.restURL,
-        apiToken: bchjs.apiToken
-      }
+      // const advancedConfig = {
+      //   noUpdate: process.env.AVAX_DEX === 'test',
+      //   restURL: bchjs.restURL,
+      //   apiToken: bchjs.apiToken
+      // }
+      const advancedConfig = {}
 
       // Instantiate minimal-slp-wallet.
       this.bchWallet = new this.BchWallet(walletData.mnemonic, advancedConfig)
