@@ -20,26 +20,6 @@ const BCHAdapter = require('./bch')
 const WalletAdapter = require('./wallet')
 const P2wdbAdapter = require('./p2wdb')
 
-//
-// // Instantiate adapter libraries.
-// const ipfs = new IPFSAdapter()
-// const localdb = new LocalDB()
-// const logapi = new LogsAPI()
-// const passport = new Passport()
-// const nodemailer = new Nodemailer()
-// const jsonFiles = new JSONFiles()
-// const bchjs = new BCHJSAdapter()
-//
-// module.exports = {
-//   ipfs,
-//   localdb,
-//   logapi,
-//   passport,
-//   nodemailer,
-//   wlogger,
-//   jsonFiles,
-//   bchjs
-
 const config = require('../../config')
 
 class Adapters {
@@ -81,11 +61,14 @@ class Adapters {
       // console.log('walletData: ', walletData)
 
       this.p2wdb = new P2wdbAdapter({ bchjs: this.bchjs })
-      // Instance the wallet.
-      await Promise.all([
-        this.wallet.instanceWallet(bchWallet, this.bchjs),
-        this.wallet.instanceAvaxWallet(avaxWallet)
-      ])
+
+      // Instance the wallets.
+      await this.wallet.instanceBchWallet(bchWallet, this.bchjs)
+      await this.wallet.instanceAvaxWallet(avaxWallet)
+
+      console.log('Async Adapters have been started.')
+
+      return true
     } catch (err) {
       console.error('Error in adapters/index.js/start()')
       throw err

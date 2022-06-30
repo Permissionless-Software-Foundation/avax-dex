@@ -37,7 +37,7 @@ class WebHook {
 
       return result.data
     } catch (err) {
-      console.log('Error in adapters/webhook/createWebHook(): ', err)
+      console.log('Error in adapters/webhook/createWebHook(): ')
       throw err
     }
   }

@@ -69,10 +69,10 @@ describe('bch', () => {
     })
   })
 
-  describe('#getPSFTokenBalance', () => {
+  describe('#getPsfTokenBalance', () => {
     it('should throw error if slpAddress is not provided', async () => {
       try {
-        await uut.getPSFTokenBalance()
+        await uut.getPsfTokenBalance()
         assert.fail('Unexpected result')
       } catch (err) {
         assert.include(err.message, 'slpAddress must be a string')
@@ -82,72 +82,75 @@ describe('bch', () => {
     it('should return psf tokens balance', async () => {
       // Mock live network calls.
       sandbox
-        .stub(uut.bchjs.SLP.Utils, 'balancesForAddress')
-        .resolves(mockData.psfBalances)
+        .stub(uut.wallet.tokens, 'listTokensFromAddress')
+        .resolves(mockData.psfBalances02)
 
       const slpAddress =
         'simpleledger:qp49th03gvjn58d6fxzaga6u09w4z56smyuk43lzkd'
-      const result = await uut.getPSFTokenBalance(slpAddress)
+      const result = await uut.getPsfTokenBalance(slpAddress)
 
       assert.isNumber(result)
-      assert.equal(result, 2)
+      assert.equal(result, 118509.35345749)
     })
 
-    it('should return 0 if the slp address does not has Psf tokens', async () => {
+    it('should return 0 if the slp address does not have PSF tokens', async () => {
       // Mock live network calls.
       sandbox
-        .stub(uut.bchjs.SLP.Utils, 'balancesForAddress')
-        .resolves(mockData.noPsfBalances)
+        .stub(uut.wallet.tokens, 'listTokensFromAddress')
+        .resolves(mockData.noPsfBalance02)
 
       const slpAddress =
         'simpleledger:qp49th03gvjn58d6fxzaga6u09w4z56smyuk43lzkd'
-      const result = await uut.getPSFTokenBalance(slpAddress)
+      const result = await uut.getPsfTokenBalance(slpAddress)
+      // console.log('result: ', result)
 
       assert.isNumber(result)
       assert.equal(result, 0)
     })
 
-    it('should return 0 for empty balances', async () => {
+    it('should return 0 if the slp address does not have any tokens', async () => {
       // Mock live network calls.
-      sandbox.stub(uut.bchjs.SLP.Utils, 'balancesForAddress').resolves([])
+      sandbox
+        .stub(uut.wallet.tokens, 'listTokensFromAddress')
+        .resolves([])
 
       const slpAddress =
         'simpleledger:qp49th03gvjn58d6fxzaga6u09w4z56smyuk43lzkd'
-      const result = await uut.getPSFTokenBalance(slpAddress)
+      const result = await uut.getPsfTokenBalance(slpAddress)
+      // console.log('result: ', result)
 
       assert.isNumber(result)
       assert.equal(result, 0)
     })
   })
-  describe('#getPSFTokenBalance', () => {
-    it('should throw error if slpAddr is not provided', async () => {
-      try {
-        await uut.getMerit()
-        assert.fail('Unexpected result')
-      } catch (err) {
-        assert.include(err.message, 'slpAddr must be a string')
-      }
-    })
-    it('should throw error if slpAddr provided is invalid type', async () => {
-      try {
-        await uut.getMerit(1)
-        assert.fail('Unexpected result')
-      } catch (err) {
-        assert.include(err.message, 'slpAddr must be a string')
-      }
-    })
-    it('should return the merit ', async () => {
-      try {
-        // Mock live network calls.
-        sandbox.stub(uut.msgLib.merit, 'agMerit').resolves(100)
 
-        const slpAddr =
-          'simpleledger:qqgnksc6zr4nzxrye69fq625wu2myxey6uh9kzjy96'
-        const merit = await uut.getMerit(slpAddr)
-        assert.isNumber(merit)
-      } catch (err) {
-        assert.fail('Unexpected result')
-      }
-    })
-  })
+  // describe('#getMerit', () => {
+  //   it('should throw error if slpAddr is not provided', async () => {
+  //     try {
+  //       await uut.getMerit()
+  //       assert.fail('Unexpected result')
+  //     } catch (err) {
+  //       assert.include(err.message, 'slpAddr must be a string')
+  //     }
+  //   })
+  //
+  //   it('should throw error if slpAddr provided is invalid type', async () => {
+  //     try {
+  //       await uut.getMerit(1)
+  //       assert.fail('Unexpected result')
+  //     } catch (err) {
+  //       assert.include(err.message, 'slpAddr must be a string')
+  //     }
+  //   })
+  //
+  //   it('should return the merit ', async () => {
+  //     // Mock live network calls.
+  //     sandbox.stub(uut.msgLib.merit, 'agMerit').resolves(100)
+  //
+  //     const slpAddr =
+  //         'simpleledger:qqgnksc6zr4nzxrye69fq625wu2myxey6uh9kzjy96'
+  //     const merit = await uut.getMerit(slpAddr)
+  //     assert.isNumber(merit)
+  //   })
+  // })
 })

@@ -95,5 +95,10 @@ module.exports = {
   ipfsHost: process.env.IPFS_HOST ? process.env.IPFS_HOST : 'localhost',
   ipfsApiPort: process.env.IPFS_API_PORT
     ? parseInt(process.env.IPFS_API_PORT)
-    : 5001
+    : 5001,
+
+  chatPubSubChan: 'psf-ipfs-chat-001',
+
+  // Local Back End for BCH blockchain access. See CashStack.info for more info.
+  bchRestUrl: process.env.BCH_LOCAL_BACKEND ? process.env.BCH_LOCAL_BACKEND : 'https://free-bch.fullstack.cash'
 }
