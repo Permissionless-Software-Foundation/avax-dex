@@ -70,5 +70,6 @@ run-dev.sh
 wallet.json
 wallet-avax.json
 data/
+wallet-bch.json
 
 !README.md
