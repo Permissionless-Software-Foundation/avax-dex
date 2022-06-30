@@ -7,6 +7,9 @@ const BCHJS = require('@psf/bch-js')
 const MsgLib = require('bch-message-lib/index')
 const BchWallet = require('minimal-slp-wallet/index')
 
+// Local libraries
+const config = require('../../config')
+
 class Bch {
   constructor () {
     // Encapsulate dependencies
@@ -15,6 +18,7 @@ class Bch {
       '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0'
     this.wallet = new BchWallet(undefined, { noUpdate: true })
     this.msgLib = new MsgLib({ wallet: this.wallet })
+    this.config = config
   }
 
   // Verify that the entry was signed by a specific BCH address.
@@ -39,44 +43,43 @@ class Bch {
     }
   }
 
-  // Gets the total psf token balance
-  async getPSFTokenBalance (slpAddress) {
+  // Get the PSF token balance for a given address.
+  async getPsfTokenBalance (slpAddress) {
     try {
+      // Input validation
       if (!slpAddress || typeof slpAddress !== 'string') {
         throw new Error('slpAddress must be a string')
       }
-      let psfBalance = 0
-      const balances = await this.bchjs.SLP.Utils.balancesForAddress(
-        slpAddress
-      )
 
-      // Sums all the balances of all tokens
-      // that match the psf token ID
-      for (let i = 0; i < balances.length; i++) {
-        if (balances[i].tokenId === this.PSF_TOKEN_ID) {
-          psfBalance += balances[i].balance
-        }
-      }
+      // let psfBalance = 0
+      const tokenBalances = await this.wallet.tokens.listTokensFromAddress(slpAddress)
+      // console.log(`tokenBalances: ${JSON.stringify(tokenBalances, null, 2)}`)
 
-      return psfBalance
+      const psfTokens = tokenBalances.filter(x => x.tokenId === this.PSF_TOKEN_ID)
+      // console.log('psfTokens: ', psfTokens)
+
+      // If no PSF tokens can be found, return 0.
+      if (psfTokens.length === 0) return 0
+
+      return psfTokens[0].qty
     } catch (err) {
       console.error('Error in bch.js/getPSFTokenBalance()')
       throw err
     }
   }
 
-  async getMerit (slpAddr) {
-    try {
-      if (!slpAddr || typeof slpAddr !== 'string') {
-        throw new Error('slpAddr must be a string')
-      }
-      const merit = await this.msgLib.merit.agMerit(slpAddr, this.PSF_TOKEN_ID)
-      return merit
-    } catch (error) {
-      console.error('error in bch.js/getMerit()')
-      throw error
-    }
-  }
+  // async getMerit (slpAddr) {
+  //   try {
+  //     if (!slpAddr || typeof slpAddr !== 'string') {
+  //       throw new Error('slpAddr must be a string')
+  //     }
+  //     const merit = await this.msgLib.merit.agMerit(slpAddr, this.PSF_TOKEN_ID)
+  //     return merit
+  //   } catch (error) {
+  //     console.error('error in bch.js/getMerit()')
+  //     throw error
+  //   }
+  // }
 }
 
 module.exports = Bch

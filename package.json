@@ -30,6 +30,7 @@
     "@chris.troutner/ipfs": "2.0.2",
     "@psf/bch-js": "6.4.1",
     "axios": "0.27.2",
+    "bch-merit-lib": "1.1.1",
     "bch-message-lib": "2.2.0",
     "bcryptjs": "2.4.3",
     "glob": "7.1.6",
