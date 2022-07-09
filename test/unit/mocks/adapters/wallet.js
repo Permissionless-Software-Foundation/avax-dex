@@ -3,7 +3,7 @@
 */
 
 const BCHJS = require('@psf/bch-js')
-const AvaxWallet = require('minimal-avax-wallet')
+const AvaxWallet = require('minimal-avax-wallet/index')
 
 const mockWallet = {
   mnemonic:
@@ -31,6 +31,9 @@ class MockBchWallet {
       return 'fakeTxid'
     }
     this.getUtxos = async () => { }
+    this.getBalance = async () => {
+      return 100000
+    }
 
     // Environment variable is used by wallet-balance.unit.js to force an error.
     if (process.env.NO_UTXO) {
@@ -161,7 +164,6 @@ class AvalancheWallet {
 
     this.ar.issueTx = (baseTx) => 'txid'
   }
-
 
   setUtxos () {
     this.utxos.utxoStore = [

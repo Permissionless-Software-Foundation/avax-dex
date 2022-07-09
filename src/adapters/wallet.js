@@ -4,7 +4,7 @@
 
 // Public npm libraries
 const BchWallet = require('minimal-slp-wallet/index')
-const AvaxWallet = require('minimal-avax-wallet')
+const AvaxWallet = require('minimal-avax-wallet/index')
 const createHash = require('create-hash')
 const { Signature } = require('avalanche/dist/common/credentials')
 
@@ -50,8 +50,10 @@ class WalletAdapter {
         let walletInstance
         if (isAvax) {
           walletInstance = new this.AvaxWallet(undefined, { noUpdate: true })
+          // walletInstance = new this.AvaxWallet(undefined)
         } else {
           walletInstance = new this.BchWallet(undefined, { noUpdate: true })
+          // walletInstance = new this.BchWallet(undefined)
         }
 
         // Wait for wallet to initialize.
@@ -206,6 +208,10 @@ class WalletAdapter {
 
       // Wait for wallet to initialize.
       await this.bchWallet.walletInfoPromise
+      console.log('this.bchWallet: ', this.bchWallet)
+
+      const balance = await this.bchWallet.getBalance()
+      console.log(`BCH wallet balance: ${balance} sats`)
 
       return true
     } catch (err) {
@@ -228,6 +234,9 @@ class WalletAdapter {
 
       // Wait for wallet to initialize.
       await this.avaxWallet.walletInfoPromise
+
+      const balance = await this.avaxWallet.listAssets()
+      console.log('AVAX wallet balance: ', balance)
 
       return true
     } catch (err) {
