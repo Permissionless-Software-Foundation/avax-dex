@@ -208,7 +208,7 @@ class WalletAdapter {
 
       // Wait for wallet to initialize.
       await this.bchWallet.walletInfoPromise
-      console.log('this.bchWallet: ', this.bchWallet)
+      // console.log('this.bchWallet: ', this.bchWallet)
 
       const balance = await this.bchWallet.getBalance()
       console.log(`BCH wallet balance: ${balance} sats`)
@@ -627,13 +627,25 @@ class WalletAdapter {
       const xchain = avalance.XChain()
 
       // fetch the transaction info
-      const txString = await xchain.getTx(txid)
+      const txString = await xchain.getTx(txid, 'hex')
+      console.log('txString: ', txString)
+
+      // Convert hex to base58
+      // const txBuf = Buffer.from(txString, 'hex')
+      // const bintools = this.avaxWallet.bintools
+      // const tx58 = bintools.bufferToB58(txBuf)
+
+      // Convert hex to cb58
+      const txBuf = Buffer.from(txString.slice(2), 'hex')
+      const bintools = this.avaxWallet.bintools
+      const cb58Tx = bintools.cb58Encode(txBuf)
+
       const tx = new avm.Tx()
-      tx.fromString(txString)
+      tx.fromString(cb58Tx)
 
       return tx
     } catch (error) {
-      console.error('Error in getTransaction()')
+      console.error('Error in getTransaction(): ', error)
       throw error
     }
   }
