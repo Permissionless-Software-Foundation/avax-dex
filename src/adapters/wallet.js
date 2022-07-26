@@ -748,8 +748,11 @@ class WalletAdapter {
       const xchain = this.avaxWallet.ava.XChain()
       const bintools = this.avaxWallet.bintools
 
+      console.log('tx: ', tx)
+
       const basetx = tx.getUnsignedTx().getTransaction()
       const outs = basetx.getOuts()
+      console.log('outs: ', outs)
 
       let utxo
       let vout
