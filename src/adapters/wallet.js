@@ -421,13 +421,19 @@ class WalletAdapter {
       const walletData = new this.AvaxWallet(keyPair.getPrivateKeyString(), { noUpdate: true })
       await walletData.walletInfoPromise
 
+      console.log('keypair found.')
+
       // Parse the partially signed transaction
       const halfSignedTx = new walletData.utxos.avm.Tx()
       const txBuffer = Buffer.from(txHex, 'hex')
       halfSignedTx.fromBuffer(txBuffer)
 
+      console.log('TX retrieved and hydrated')
+
       const credentials = halfSignedTx.getCredentials()
       const partialTx = halfSignedTx.getUnsignedTx()
+
+      console.log('signing transaction')
 
       // Sign Alice's input.
       const keyChain = walletData.tokens.xchain.keyChain()
@@ -451,13 +457,26 @@ class WalletAdapter {
         throw new Error('The transaction is not fully signed')
       }
 
+      console.log('tx fully signed')
+
       // Broadcast the transaction.
-      const signedHex = signed.toString()
-      const txid = await walletData.sendAvax.ar.issueTx(signedHex)
+      // const signedHex = signed.toStringHex()
+      // console.log('signedHex: ', signedHex)
+
+      // Convert the transaction to hex.
+      const bintools = this.avaxWallet.bintools
+      const signedBuf = signed.toBuffer()
+      const signedHex = bintools.addChecksum(signedBuf).toString("hex")
+      console.log('signedHex: ', signedHex)
+
+      const txid = await walletData.sendAvax.ar.issueTx(`0x${signedHex}`)
+      // const txid = await walletData.sendAvax.ar.issueTx(signedHex)
+
+      console.log('tx broadcasted')
 
       return { txid }
     } catch (err) {
-      console.log('Error in wallet.json/completeTxHex()', err)
+      console.log('Error in adapters/wallet.js/completeTxHex()', err)
       throw err
     }
   }
@@ -811,7 +830,7 @@ class WalletAdapter {
       formated.status = 'unspent'
       return formated
     } catch (error) {
-      console.error('Error in getTxOutStatus(): ', error)
+      console.error('Error in getTxOut(): ', error)
       throw error
     }
   }
