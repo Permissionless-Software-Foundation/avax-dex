@@ -13,7 +13,8 @@ const WalletAdapter = require('../../../src/adapters/wallet')
 const {
   MockBchWallet,
   AvalancheWallet,
-  txString,
+  // txString,
+  txString02,
   emptyUTXOSet,
   assetUTXOSet
 } = require('../mocks/adapters/wallet')
@@ -514,7 +515,7 @@ describe('#wallet', () => {
   describe('#getTransaction', () => {
     it('should return a avm.Tx item', async () => {
       uut.avaxWallet = new AvalancheWallet()
-      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString02)
 
       const result = await uut.getTransaction('txid')
 
@@ -535,7 +536,7 @@ describe('#wallet', () => {
     it('should return "unspend" if the utxo hasnt been spent', async () => {
       uut.avaxWallet = new AvalancheWallet()
 
-      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString02)
       sandbox.stub(uut.avaxWallet.ava.XChain(), 'getUTXOs').resolves({ utxos: assetUTXOSet })
 
       const result = await uut.getTxOut('23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK', 1)
@@ -545,7 +546,7 @@ describe('#wallet', () => {
     it('should return null if the utxo was spent', async () => {
       uut.avaxWallet = new AvalancheWallet()
 
-      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString02)
       sandbox.stub(uut.avaxWallet.ava.XChain(), 'getUTXOs').resolves({ utxos: emptyUTXOSet })
 
       const result = await uut.getTxOut('23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK', 1)
@@ -567,22 +568,26 @@ describe('#wallet', () => {
     it('should return the utxo and the vout if any matches the criteria', async () => {
       uut.avaxWallet = new AvalancheWallet()
 
-      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      // Mock network calls
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString02)
+      // sandbox.stub(uut, 'getTransaction').resolves(txString02)
       const result = await uut.findTxOut('txid', {
-        address: 'X-avax1rjhc87za0j996nh6lxvgw4w72rp42jl67t7mln',
-        amount: 500,
-        assetID: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si'
+        address: 'X-avax12vuqtkfvggxqu9j8rsgvna6u66a9vdw3zfkasx',
+        amount: 2,
+        assetID: '3ANJaWgWADTyWbquGSyATxsMpnDB6xNn1bAQrJ4it68YjquJH'
       })
+      console.log('result: ', result)
 
       assert.hasAllKeys(result, ['utxo', 'vout'])
-      assert.equal(result.vout, 2)
+      assert.equal(result.vout, 0)
       assert.equal(result.utxo.getTypeName(), 'TransferableOutput')
     })
 
     it('should return null if there is not an output that matches the criteria', async () => {
       uut.avaxWallet = new AvalancheWallet()
 
-      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString02)
+      // sandbox.stub(uut, 'getTransaction').resolves(txString02)
       const result = await uut.findTxOut('txid', {
         assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5'
       })
@@ -593,7 +598,7 @@ describe('#wallet', () => {
     it('should return the last utxo if the criteria is an empty object', async () => {
       uut.avaxWallet = new AvalancheWallet()
 
-      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString)
+      sandbox.stub(uut.avaxWallet.ava.XChain(), 'getTx').resolves(txString02)
       const result = await uut.findTxOut('txid')
 
       assert.hasAllKeys(result, ['utxo', 'vout'])

@@ -102,6 +102,14 @@ class OfferLib {
         amount,
         assetID: offerEntity.tokenId
       }
+      console.log(`receiver: ${JSON.stringify(receiver, null, 2)}`)
+
+      // Update the AVAX UTXO store
+      // console.log('this.adapters.wallet.avaxWallet.walletInfo: ', this.adapters.wallet.avaxWallet.walletInfo)
+      // const avaxAddr = this.adapters.wallet.avaxWallet.walletInfo.address
+      // await this.adapters.wallet.avaxWallet.utxos.initUtxoStore(avaxAddr)
+
+      // console.log('avax utxoStore: ', this.adapters.wallet.avaxWallet.utxos.utxoStore)
 
       // Broadcast the transaction to move the tokens.
       const txid = await this.adapters.wallet.avaxWallet.send([receiver])
@@ -130,7 +138,7 @@ class OfferLib {
         const asset = assets.find(item => item.assetID === offerEntity.tokenId)
 
         // Turn token into sats
-        const denomination = asset?.denomination || 0
+        const denomination = asset.denomination || 0
         const amount = offerEntity.numTokens * Math.pow(10, denomination)
         if (!asset || asset.amount < amount) {
           throw new Error(

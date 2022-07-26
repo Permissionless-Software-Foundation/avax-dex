@@ -4,7 +4,7 @@
 
 // Public npm libraries
 const BchWallet = require('minimal-slp-wallet/index')
-const AvaxWallet = require('minimal-avax-wallet')
+const AvaxWallet = require('minimal-avax-wallet/index')
 const createHash = require('create-hash')
 const { Signature } = require('avalanche/dist/common/credentials')
 
@@ -50,8 +50,10 @@ class WalletAdapter {
         let walletInstance
         if (isAvax) {
           walletInstance = new this.AvaxWallet(undefined, { noUpdate: true })
+          // walletInstance = new this.AvaxWallet(undefined)
         } else {
           walletInstance = new this.BchWallet(undefined, { noUpdate: true })
+          // walletInstance = new this.BchWallet(undefined)
         }
 
         // Wait for wallet to initialize.
@@ -206,6 +208,10 @@ class WalletAdapter {
 
       // Wait for wallet to initialize.
       await this.bchWallet.walletInfoPromise
+      // console.log('this.bchWallet: ', this.bchWallet)
+
+      const balance = await this.bchWallet.getBalance()
+      console.log(`BCH wallet balance: ${balance} sats`)
 
       return true
     } catch (err) {
@@ -228,6 +234,9 @@ class WalletAdapter {
 
       // Wait for wallet to initialize.
       await this.avaxWallet.walletInfoPromise
+
+      const balance = await this.avaxWallet.listAssets()
+      console.log('AVAX wallet balance: ', balance)
 
       return true
     } catch (err) {
@@ -412,13 +421,19 @@ class WalletAdapter {
       const walletData = new this.AvaxWallet(keyPair.getPrivateKeyString(), { noUpdate: true })
       await walletData.walletInfoPromise
 
+      console.log('keypair found.')
+
       // Parse the partially signed transaction
       const halfSignedTx = new walletData.utxos.avm.Tx()
       const txBuffer = Buffer.from(txHex, 'hex')
       halfSignedTx.fromBuffer(txBuffer)
 
+      console.log('TX retrieved and hydrated')
+
       const credentials = halfSignedTx.getCredentials()
       const partialTx = halfSignedTx.getUnsignedTx()
+
+      console.log('signing transaction')
 
       // Sign Alice's input.
       const keyChain = walletData.tokens.xchain.keyChain()
@@ -442,13 +457,26 @@ class WalletAdapter {
         throw new Error('The transaction is not fully signed')
       }
 
+      console.log('tx fully signed')
+
       // Broadcast the transaction.
-      const signedHex = signed.toString()
-      const txid = await walletData.sendAvax.ar.issueTx(signedHex)
+      // const signedHex = signed.toStringHex()
+      // console.log('signedHex: ', signedHex)
+
+      // Convert the transaction to hex.
+      const bintools = this.avaxWallet.bintools
+      const signedBuf = signed.toBuffer()
+      const signedHex = bintools.addChecksum(signedBuf).toString('hex')
+      console.log('signedHex: ', signedHex)
+
+      const txid = await walletData.sendAvax.ar.issueTx(`0x${signedHex}`)
+      // const txid = await walletData.sendAvax.ar.issueTx(signedHex)
+
+      console.log('tx broadcasted')
 
       return { txid }
     } catch (err) {
-      console.log('Error in wallet.json/completeTxHex()', err)
+      console.log('Error in adapters/wallet.js/completeTxHex()', err)
       throw err
     }
   }
@@ -618,13 +646,25 @@ class WalletAdapter {
       const xchain = avalance.XChain()
 
       // fetch the transaction info
-      const txString = await xchain.getTx(txid)
+      const txString = await xchain.getTx(txid, 'hex')
+      console.log('txString: ', txString)
+
+      // Convert hex to base58
+      // const txBuf = Buffer.from(txString, 'hex')
+      // const bintools = this.avaxWallet.bintools
+      // const tx58 = bintools.bufferToB58(txBuf)
+
+      // Convert hex to cb58
+      const txBuf = Buffer.from(txString.slice(2), 'hex')
+      const bintools = this.avaxWallet.bintools
+      const cb58Tx = bintools.cb58Encode(txBuf)
+
       const tx = new avm.Tx()
-      tx.fromString(txString)
+      tx.fromString(cb58Tx)
 
       return tx
     } catch (error) {
-      console.error('Error in getTransaction()')
+      console.error('Error in getTransaction(): ', error)
       throw error
     }
   }
@@ -708,8 +748,11 @@ class WalletAdapter {
       const xchain = this.avaxWallet.ava.XChain()
       const bintools = this.avaxWallet.bintools
 
+      console.log('tx: ', tx)
+
       const basetx = tx.getUnsignedTx().getTransaction()
       const outs = basetx.getOuts()
+      console.log('outs: ', outs)
 
       let utxo
       let vout
@@ -790,7 +833,7 @@ class WalletAdapter {
       formated.status = 'unspent'
       return formated
     } catch (error) {
-      console.error('Error in getTxOutStatus(): ', error)
+      console.error('Error in getTxOut(): ', error)
       throw error
     }
   }
