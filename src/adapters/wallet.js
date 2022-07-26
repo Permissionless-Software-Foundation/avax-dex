@@ -466,7 +466,7 @@ class WalletAdapter {
       // Convert the transaction to hex.
       const bintools = this.avaxWallet.bintools
       const signedBuf = signed.toBuffer()
-      const signedHex = bintools.addChecksum(signedBuf).toString("hex")
+      const signedHex = bintools.addChecksum(signedBuf).toString('hex')
       console.log('signedHex: ', signedHex)
 
       const txid = await walletData.sendAvax.ar.issueTx(`0x${signedHex}`)
