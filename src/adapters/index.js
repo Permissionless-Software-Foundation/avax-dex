@@ -58,7 +58,7 @@ class Adapters {
       // Open the wallet files
       const bchWallet = await this.wallet.openWallet(false)
       const avaxWallet = await this.wallet.openWallet(true)
-      // console.log('walletData: ', walletData)
+      console.log('avaxWallet: ', avaxWallet)
 
       this.p2wdb = new P2wdbAdapter({ bchjs: this.bchjs })
 
