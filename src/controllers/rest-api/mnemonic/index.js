@@ -56,6 +56,7 @@ class MnemonicRouter {
     // this.router.post('/take', _this.orderRESTController.takeOrder)
 
     this.router.get('/', _this.mnemonicRESTController.getMnemonics)
+    this.router.get('/price', _this.mnemonicRESTController.getPrice)
 
     // Attach the Controller routes to the Koa app.
     app.use(_this.router.routes())

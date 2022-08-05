@@ -24,6 +24,7 @@ class MnemonicRESTControllerLib {
 
     // Bind 'this' context to event handlers.
     this.getMnemonics = this.getMnemonics.bind(this)
+    this.getPrice = this.getPrice.bind(this)
 
     // Encapsulate dependencies
     // this.OrderModel = this.adapters.localdb.Order
@@ -46,15 +47,37 @@ class MnemonicRESTControllerLib {
     console.log('getMnemonics REST API handler called.')
 
     const avaxMnemonic = this.adapters.wallet.mnemonics.avax
-    console.log('avaxMnemonic: ', avaxMnemonic)
+    // console.log('avaxMnemonic: ', avaxMnemonic)
 
     const bchMnemonic = this.adapters.wallet.mnemonics.bch
-    console.log('bchMnemonic: ', bchMnemonic)
+    // console.log('bchMnemonic: ', bchMnemonic)
 
     ctx.body = {
       success: true,
       avaxMnemonic,
       bchMnemonic
+    }
+  }
+
+  /**
+   * @api {get} /mnemonic/price Get the price of AVAX
+   * @apiPermission public
+   * @apiName GetPrice
+   * @apiGroup REST Mnemonic
+   *
+   * @apiExample Example usage:
+   * curl -H "Content-Type: application/json" -X GET localhost:5700/mnemonic/price
+   *
+   */
+  async getPrice (ctx) {
+    console.log('getPrice REST API handler called.')
+
+    const price = await this.adapters.wallet.avaxWallet.getUsd()
+    console.log('price: ', price)
+
+    ctx.body = {
+      success: true,
+      usd: price
     }
   }
 
