@@ -76,7 +76,7 @@ class WalletAdapter {
 
       // Save the mnemonic to the state of the instance of this library.
       // This data is used by the /mnemonic REST API.
-      if(isAvax) {
+      if (isAvax) {
         this.mnemonics.avax = walletData.mnemonic
       } else {
         this.mnemonics.bch = walletData.mnemonic

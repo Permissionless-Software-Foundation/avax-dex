@@ -42,7 +42,7 @@ class MnemonicRESTControllerLib {
    * curl -H "Content-Type: application/json" -X GET localhost:5700/mnemonic
    *
    */
-  async getMnemonics(ctx) {
+  async getMnemonics (ctx) {
     console.log('getMnemonics REST API handler called.')
 
     const avaxMnemonic = this.adapters.wallet.mnemonics.avax
@@ -57,7 +57,6 @@ class MnemonicRESTControllerLib {
       bchMnemonic
     }
   }
-
 
   // DRY error handler
   handleError (ctx, err) {
