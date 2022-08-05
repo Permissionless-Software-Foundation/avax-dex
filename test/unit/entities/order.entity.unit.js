@@ -73,7 +73,7 @@ describe('#Order-Entity', () => {
     it('should throw an error if buyOrSell is not included', () => {
       try {
         const orderData = {
-          data: { messageType: 1, messageClass: 1, tokenId: 'fakeId' }
+          data: { messageType: 1, messageClass: 1, tokenId: 'fakeId', name: 'fakeName', symbol: 'test' }
         }
 
         uut.validate(orderData)
@@ -90,7 +90,9 @@ describe('#Order-Entity', () => {
             messageType: 1,
             messageClass: 1,
             tokenId: 'fakeId',
-            buyOrSell: 'buy'
+            name: 'fakeName',
+            symbol: 'test',
+            buyOrSell: 'buy',
           }
         }
 
@@ -111,6 +113,8 @@ describe('#Order-Entity', () => {
             messageType: 1,
             messageClass: 1,
             tokenId: 'fakeId',
+            name: 'fakeName',
+            symbol: 'test',
             buyOrSell: 'buy',
             rateInSats: 1000
           }
@@ -133,6 +137,8 @@ describe('#Order-Entity', () => {
             messageType: 1,
             messageClass: 1,
             tokenId: 'fakeId',
+            name: 'fakeName',
+            symbol: 'test',
             buyOrSell: 'buy',
             rateInSats: 1000,
             minSatsToExchange: 350
@@ -152,6 +158,8 @@ describe('#Order-Entity', () => {
             messageType: 1,
             messageClass: 1,
             tokenId: 'fakeId',
+            name: 'fakeName',
+            symbol: 'test',
             buyOrSell: 'buy',
             rateInSats: 1000,
             minSatsToExchange: 350,
@@ -172,6 +180,8 @@ describe('#Order-Entity', () => {
             messageType: 1,
             messageClass: 1,
             tokenId: 'fakeId',
+            name: 'fakeName',
+            symbol: 'test',
             buyOrSell: 'buy',
             rateInSats: 1000,
             minSatsToExchange: 350,
@@ -196,6 +206,8 @@ describe('#Order-Entity', () => {
             messageType: 1,
             messageClass: 1,
             tokenId: 'fakeId',
+            name: 'fakeName',
+            symbol: 'test',
             buyOrSell: 'buy',
             rateInSats: 1000,
             minSatsToExchange: 350,
@@ -221,6 +233,8 @@ describe('#Order-Entity', () => {
             messageType: 1,
             messageClass: 1,
             tokenId: 'fakeId',
+            name: 'fakeName',
+            symbol: 'test',
             buyOrSell: 'buy',
             rateInSats: 1000,
             minSatsToExchange: 350,
@@ -248,6 +262,8 @@ describe('#Order-Entity', () => {
           messageClass: 1,
           tokenId:
             '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0',
+          name: 'fakeName',
+          symbol: 'test',
           buyOrSell: 'sell',
           rateInSats: 1000,
           minSatsToExchange: 10,

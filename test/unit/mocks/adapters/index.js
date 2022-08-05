@@ -5,12 +5,19 @@
 const BCHJS = require('@psf/bch-js')
 const bchjs = new BCHJS()
 
-const ipfs = {
-  ipfsAdapter: {
-    ipfs: {}
-  },
-  ipfsCoordAdapter: {
-    ipfsCoord: {
+class IpfsAdapter {
+  constructor () {
+    this.ipfs = {
+      files: {
+        stat: () => {}
+      }
+    }
+  }
+}
+
+class IpfsCoordAdapter {
+  constructor () {
+    this.ipfsCoord = {
       useCases: {
         peer: {
           sendPrivateMessage: () => { }
@@ -19,6 +26,12 @@ const ipfs = {
     }
   }
 }
+
+const ipfs = {
+  ipfsAdapter: new IpfsAdapter(),
+  ipfsCoordAdapter: new IpfsCoordAdapter()
+}
+ipfs.ipfs = ipfs.ipfsAdapter.ipfs
 
 const localdb = {
   Users: class Users {
@@ -139,7 +152,8 @@ const wallet = {
   validateIntegrity: () => { },
   completeTxHex: () => { },
   bchWallet: new MockBchWallet(),
-  avaxWallet: new AvalancheWallet()
+  avaxWallet: new AvalancheWallet(),
+  getTransaction: async () => {}
 }
 
 const p2wdb = {
