@@ -57,6 +57,7 @@ class Adapters {
 
       // Open the wallet files
       const bchWallet = await this.wallet.openWallet(false)
+      console.log('bchWallet: ', bchWallet)
       const avaxWallet = await this.wallet.openWallet(true)
       console.log('avaxWallet: ', avaxWallet)
 

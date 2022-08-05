@@ -28,6 +28,12 @@ class WalletAdapter {
 
     this.createHash = createHash
     this.Signature = Signature
+
+    // Initialize the mnemonics object. This is used by the /mnemonic REST API
+    this.mnemonics = {
+      avax: '',
+      bch: ''
+    }
   }
 
   // Open the wallet file, or create one if the file doesn't exist.
@@ -66,6 +72,14 @@ class WalletAdapter {
 
         // Write the wallet data to the JSON file.
         await this.jsonFiles.writeJSON(walletData, walletFile)
+      }
+
+      // Save the mnemonic to the state of the instance of this library.
+      // This data is used by the /mnemonic REST API.
+      if(isAvax) {
+        this.mnemonics.avax = walletData.mnemonic
+      } else {
+        this.mnemonics.bch = walletData.mnemonic
       }
 
       // console.log('walletData: ', walletData)
