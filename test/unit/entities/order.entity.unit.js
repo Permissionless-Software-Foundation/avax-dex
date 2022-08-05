@@ -92,7 +92,7 @@ describe('#Order-Entity', () => {
             tokenId: 'fakeId',
             name: 'fakeName',
             symbol: 'test',
-            buyOrSell: 'buy',
+            buyOrSell: 'buy'
           }
         }
 
