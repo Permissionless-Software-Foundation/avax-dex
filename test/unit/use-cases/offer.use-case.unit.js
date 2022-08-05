@@ -82,6 +82,14 @@ describe('#offer-use-case', () => {
       sandbox
         .stub(uut.adapters.wallet.bchWallet.bchjs.Util, 'sleep')
         .resolves()
+      sandbox.stub(uut.adapters.wallet, 'getTransaction').resolves({
+        unsignedTx: {
+          transaction: {
+            name: 'testName',
+            symbol: 'testSymbol'
+          }
+        }
+      })
 
       const result = await uut.createOffer(entryObj)
 

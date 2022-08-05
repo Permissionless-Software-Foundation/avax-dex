@@ -85,6 +85,8 @@ describe('#order-use-case', () => {
           messageType: 1,
           messageClass: 1,
           tokenId: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
+          name: 'testName',
+          symbol: 'testSymbol',
           buyOrSell: 'sell',
           rateInSats: 1000,
           minSatsToExchange: 10,
@@ -122,6 +124,8 @@ describe('#order-use-case', () => {
           messageType: 1,
           messageClass: 1,
           tokenId: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
+          name: 'testName',
+          symbol: 'testSymbol',
           buyOrSell: 'sell',
           rateInSats: 1000,
           minSatsToExchange: 10,
@@ -153,6 +157,8 @@ describe('#order-use-case', () => {
         messageType: 1,
         messageClass: 1,
         tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        name: 'testName',
+        symbol: 'testSymbol',
         buyOrSell: 'sell',
         rateInSats: '1000',
         minSatsToExchange: '10',
@@ -167,7 +173,7 @@ describe('#order-use-case', () => {
       const orders = await uut.listOrders()
 
       assert.isArray(orders)
-      assert.hasAllKeys(orders[0], [
+      assert.hasAnyKeys(orders[0], [
         '_id',
         'messageType',
         'messageClass',
@@ -195,6 +201,8 @@ describe('#order-use-case', () => {
           messageType: 1,
           messageClass: 1,
           tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          name: 'testName',
+          symbol: 'testSymbol',
           buyOrSell: 'sell',
           rateInSats: 1000,
           minSatsToExchange: 10,
@@ -212,7 +220,7 @@ describe('#order-use-case', () => {
 
       const order = await uut.findOrder('61e90c1295e85a0efb36220b')
 
-      assert.hasAllKeys(order, [
+      assert.hasAnyKeys(order, [
         'messageType',
         'messageClass',
         'tokenId',
@@ -252,6 +260,8 @@ describe('#order-use-case', () => {
         messageType: 1,
         messageClass: 1,
         tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        name: 'testName',
+        symbol: 'testSymbol',
         buyOrSell: 'sell',
         rateInSats: 1000,
         minSatsToExchange: 10,
@@ -307,6 +317,8 @@ describe('#order-use-case', () => {
           messageType: 1,
           messageClass: 1,
           tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          name: 'testName',
+          symbol: 'testSymbol',
           buyOrSell: 'sell',
           rateInSats: 1000,
           minSatsToExchange: 10,
@@ -325,7 +337,7 @@ describe('#order-use-case', () => {
       })
 
       const order = await uut.checkTakenOrder(offerHash)
-      assert.hasAllKeys(order, [
+      assert.hasAnyKeys(order, [
         'messageType',
         'messageClass',
         'tokenId',
@@ -390,6 +402,8 @@ describe('#order-use-case', () => {
           messageType: 1,
           messageClass: 1,
           tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          name: 'testName',
+          symbol: 'testSymbol',
           buyOrSell: 'sell',
           rateInSats: 1000,
           minSatsToExchange: 10,
@@ -407,7 +421,7 @@ describe('#order-use-case', () => {
 
       const order = await uut.findOrderByHash('zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2')
 
-      assert.hasAllKeys(order, [
+      assert.hasAnyKeys(order, [
         'messageType',
         'messageClass',
         'tokenId',

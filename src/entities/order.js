@@ -20,6 +20,8 @@ class OrderEntity {
       messageType,
       messageClass,
       tokenId,
+      name,
+      symbol,
       buyOrSell,
       rateInSats,
       minSatsToExchange,
@@ -41,6 +43,12 @@ class OrderEntity {
     }
     if (!tokenId || typeof tokenId !== 'string') {
       throw new Error("Property 'tokenId' must be a string.")
+    }
+    if (!name || typeof name !== 'string') {
+      throw new Error("Property 'name' must be a string.")
+    }
+    if (!symbol || typeof symbol !== 'string') {
+      throw new Error("Property 'symbol' must be a string.")
     }
     if (!buyOrSell || typeof buyOrSell !== 'string') {
       throw new Error("Property 'buyOrSell' must be a string.")
@@ -71,6 +79,8 @@ class OrderEntity {
       messageType,
       messageClass,
       tokenId,
+      name,
+      symbol,
       buyOrSell,
       rateInSats,
       minSatsToExchange,
