@@ -647,12 +647,7 @@ class WalletAdapter {
 
       // fetch the transaction info
       const txString = await xchain.getTx(txid, 'hex')
-      console.log('txString: ', txString)
-
-      // Convert hex to base58
-      // const txBuf = Buffer.from(txString, 'hex')
-      // const bintools = this.avaxWallet.bintools
-      // const tx58 = bintools.bufferToB58(txBuf)
+      // console.log('txString: ', txString)
 
       // Convert hex to cb58
       const txBuf = Buffer.from(txString.slice(2), 'hex')
@@ -748,11 +743,11 @@ class WalletAdapter {
       const xchain = this.avaxWallet.ava.XChain()
       const bintools = this.avaxWallet.bintools
 
-      console.log('tx: ', tx)
+      // console.log('tx: ', tx)
 
       const basetx = tx.getUnsignedTx().getTransaction()
       const outs = basetx.getOuts()
-      console.log('outs: ', outs)
+      // console.log('outs: ', outs)
 
       let utxo
       let vout

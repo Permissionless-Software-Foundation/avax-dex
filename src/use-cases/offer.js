@@ -1,6 +1,8 @@
-const { wlogger } = require('../adapters/wlogger')
 
+// Local libraries
+const { wlogger } = require('../adapters/wlogger')
 const OfferEntity = require('../entities/offer')
+const config = require('../../config')
 
 class OfferLib {
   constructor (localConfig = {}) {
@@ -16,6 +18,7 @@ class OfferLib {
     this.offerEntity = new OfferEntity()
     this.OfferModel = this.adapters.localdb.Offer
     this.bch = this.adapters.bch
+    this.config = config
   }
 
   // Create a new offer model and add it to the Mongo database.
@@ -51,6 +54,12 @@ class OfferLib {
         addressInfo.privateKey
       )
 
+      // Get the ticker and name of the token.
+      const tokenTx = await this.adapters.wallet.getTransaction(entryObj.tokenId)
+      // console.log('tokenTx: ', tokenTx)
+      offerEntity.name = tokenTx.unsignedTx.transaction.name
+      offerEntity.symbol = tokenTx.unsignedTx.transaction.symbol
+
       // Update the offer with the new UTXO information and the partialTx information.
       offerEntity.utxoTxid = utxoInfo.txid
       offerEntity.utxoVout = utxoInfo.vout
@@ -62,7 +71,7 @@ class OfferLib {
       const hash = await this.adapters.p2wdb.write({
         wif: this.adapters.wallet.bchWallet.walletInfo.privateKey,
         data: offerEntity,
-        appId: 'swapTest555'
+        appId: this.config.appId
       })
 
       offerEntity.p2wdbHash = hash

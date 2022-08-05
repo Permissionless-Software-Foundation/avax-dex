@@ -7,13 +7,15 @@ const axios = require('axios')
 
 let _this
 
-const APPID = 'avax-dex-001'
+const APPID = config.appId
 
 class WebHook {
   constructor () {
+    // Encapsulate dependencies
+    this.config = config
+    this.axios = axios
+
     _this = this
-    _this.config = config
-    _this.axios = axios
   }
 
   // REST petition to create a webhook in p2wdb-service

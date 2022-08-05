@@ -6,6 +6,8 @@ const Order = new mongoose.Schema({
   messageType: { type: Number },
   messageClass: { type: Number },
   tokenId: { type: String },
+  name: { type: String },
+  symbol: { type: String },
   buyOrSell: { type: String },
   rateInSats: { type: Number },
   minSatsToExchange: { type: Number },
