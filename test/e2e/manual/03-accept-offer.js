@@ -16,7 +16,7 @@ async function start () {
       method: 'post',
       url: `${LOCALHOST}/offer/accept`,
       data: {
-        hash: 'zdpuArF6CzUjReQMSWuHQdp3xmebcDAK6VqMSuRnkGQ1KLoFi'
+        hash: 'zdpuAtBkKD7KRDFVJdGKtXF5EzEtebn8acbKKW3sy8S53YN67'
       }
     }
 

@@ -19,7 +19,7 @@ let ctx
 
 const mockContext = require('../../../../unit/mocks/ctx-mock').context
 
-describe('#Offer-REST-Router', () => {
+describe('#Offer-REST-Controller', () => {
   // const testUser = {}
 
   beforeEach(() => {
@@ -231,7 +231,7 @@ describe('#Offer-REST-Router', () => {
         hdIndex: offerMock.hdIndex,
         orderEntity: orderMock
       }))
-      assert.hasAllKeys(ctx.body, ['hash', 'txid'])
+      assert.hasAllKeys(ctx.body, ['txid'])
       assert.isTrue(handleErrorSpy.notCalled)
     })
 

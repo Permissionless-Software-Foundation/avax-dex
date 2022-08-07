@@ -154,14 +154,18 @@ class OrderUseCases {
       entryObj.txid = txid
       entryObj.orderStatus = 'accepted'
 
+      // CT 8/7/22 The acceptance TX info does not need to be written to the P2WDB.
+      // The garbage collection function should detect that the UTXO has been
+      // spent and delete the entry from the database.
+      //
       // Write the updated order information to the P2WDB.
-      const hash = await this.adapters.p2wdb.write({
-        wif: this.adapters.wallet.bchWallet.walletInfo.privateKey,
-        data: entryObj,
-        appId: this.config.appId
-      })
+      // const hash = await this.adapters.p2wdb.write({
+      //   wif: this.adapters.wallet.bchWallet.walletInfo.privateKey,
+      //   data: entryObj,
+      //   appId: this.config.appId
+      // })
 
-      return { txid, hash }
+      return { txid }
     } catch (error) {
       console.error('Error in completeOrder(): ', error)
       throw error

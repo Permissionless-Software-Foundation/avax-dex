@@ -519,11 +519,11 @@ describe('#order-use-case', () => {
       }
       const res = await uut.completeOrder(mockArgs)
 
-      assert.hasAllKeys(res, ['txid', 'hash'])
+      assert.hasAllKeys(res, ['txid'])
       assert.equal(res.txid, 'txid')
-      assert.equal(res.hash, 'hash')
+      // assert.equal(res.hash, 'hash')
       assert.isTrue(consoleSpy.notCalled)
-      assert.isTrue(writeStub.called)
+      // assert.isTrue(writeStub.called)
       assert.isTrue(integrityStub.calledWith(mockArgs.offerTxHex, mockArgs.orderEntity.txHex))
       assert.isTrue(
         completeStub.calledWith(

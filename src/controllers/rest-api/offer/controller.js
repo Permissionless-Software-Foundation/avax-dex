@@ -90,13 +90,13 @@ class OfferRESTControllerLib {
       const offerEntity = await _this.useCases.offer.findOfferByHash(orderEntity.offerHash)
 
       // 'Take' the Order.
-      const { hash, txid } = await _this.useCases.order.completeOrder({
+      const { txid } = await _this.useCases.order.completeOrder({
         offerTxHex: offerEntity.txHex,
         hdIndex: offerEntity.hdIndex,
         orderEntity
       })
 
-      ctx.body = { hash, txid }
+      ctx.body = { txid }
     } catch (err) {
       console.log('Error in takeOrder REST API handler.')
       _this.handleError(ctx, err)

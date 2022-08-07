@@ -429,6 +429,9 @@ class WalletAdapter {
     }
   }
 
+  // This function generates the final 'acceptance' tranaction on the AVAX
+  // blockchain. It signs the partially-signed TX, turning it into a fully-signed
+  // TX. It then broadcasts the final transaction.
   async completeTxHex (txHex, addrReferences, hdIndex) {
     try {
       const keyPair = await this.getAvaxKeyPair(hdIndex)
