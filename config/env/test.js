@@ -7,6 +7,6 @@
 module.exports = {
   session: 'secret-boilerplate-token',
   token: 'secret-jwt-token',
-  database: 'mongodb://localhost:27017/swap-service-test',
+  database: 'mongodb://localhost:27017/avax-dex-test',
   env: 'test'
 }

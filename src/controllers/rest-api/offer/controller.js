@@ -32,13 +32,17 @@ class OfferRESTControllerLib {
   // No api-doc documentation because this wont be a public endpoint
   async createOffer (ctx) {
     try {
-      // console.log('body: ', ctx.request.body)
+      console.log('body: ', ctx.request.body)
 
-      const offerObj = ctx.request.body.offer
-      const hash = await _this.useCases.offer.createOffer(offerObj)
+      const offerObj = ctx.request.body
 
-      ctx.body = { hash }
+      await _this.useCases.offer.createOffer(offerObj)
+
+      ctx.body = {
+        success: true
+      }
     } catch (err) {
+      console.log('Error in createOffer REST API handler.')
       // console.log(`err.message: ${err.message}`)
       // console.log('err: ', err)
       // ctx.throw(422, err.message)
@@ -58,47 +62,27 @@ class OfferRESTControllerLib {
     }
   }
 
-  async checkStatusByOfferHash (ctx) {
-    try {
-      const p2wdbOfferHash = ctx.request.body.hash
-      const order = await _this.useCases.order.checkTakenOrder(p2wdbOfferHash)
-
-      if (!order) {
-        ctx.body = {
-          order: false
-        }
-        return
-      }
-
-      ctx.body = {
-        order
-      }
-    } catch (error) {
-      console.log('Error in checkStatus REST API handler.')
-      _this.handleError(ctx, error)
-    }
-  }
-
-  async acceptOffer (ctx) {
+  async takeOffer (ctx) {
     try {
       console.log('body: ', ctx.request.body)
 
-      const orderHash = ctx.request.body.hash
+      // const offerId = ctx.request.body.offerId
+      const offerP2wdbId = ctx.request.body.offerP2wdbId
 
-      // Find the Order.
-      const orderEntity = await _this.useCases.order.findOrderByHash(orderHash)
-      const offerEntity = await _this.useCases.offer.findOfferByHash(orderEntity.offerHash)
+      // Retrieve the Offer.
+      const offerEntity = await _this.useCases.offer.findOfferByHash(offerP2wdbId)
+      console.log('offerEntity: ', offerEntity)
 
-      // 'Take' the Order.
-      const { txid } = await _this.useCases.order.completeOrder({
-        offerTxHex: offerEntity.txHex,
-        hdIndex: offerEntity.hdIndex,
-        orderEntity
-      })
+      // Find the Offer.
+      // const offerEntity = await _this.useCases.offer.findOffer(offerId)
 
-      ctx.body = { txid }
+      // 'Take' the Offer.
+      const hash = await _this.useCases.offer.takeOffer(offerEntity)
+      // const hash = 'fake-hash'
+
+      ctx.body = { hash }
     } catch (err) {
-      console.log('Error in takeOrder REST API handler.')
+      console.log('Error in takeOffer REST API handler.')
       _this.handleError(ctx, err)
     }
   }

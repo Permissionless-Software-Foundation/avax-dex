@@ -50,9 +50,8 @@ class OfferRouter {
 
     // Define the routes and attach the controller.
     this.router.post('/', _this.offerRESTController.createOffer)
-    this.router.post('/is-taken', _this.offerRESTController.checkStatusByOfferHash)
     this.router.get('/list', _this.offerRESTController.listOffers)
-    this.router.post('/accept', _this.offerRESTController.acceptOffer)
+    this.router.post('/take', _this.offerRESTController.takeOffer)
 
     // Attach the Controller routes to the Koa app.
     app.use(_this.router.routes())

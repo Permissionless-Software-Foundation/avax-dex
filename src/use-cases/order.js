@@ -1,38 +1,38 @@
 
 // Local libraries
 const { wlogger } = require('../adapters/wlogger')
-const OfferEntity = require('../entities/offer')
+const OrderEntity = require('../entities/order')
 const config = require('../../config')
 
-class OfferLib {
+class OrderLib {
   constructor (localConfig = {}) {
     // console.log('User localConfig: ', localConfig)
     this.adapters = localConfig.adapters
     if (!this.adapters) {
       throw new Error(
-        'Instance of adapters must be passed in when instantiating Offer Use Cases library.'
+        'Instance of adapters must be passed in when instantiating Order Use Cases library.'
       )
     }
 
     // Encapsulate dependencies
-    this.offerEntity = new OfferEntity()
-    this.OfferModel = this.adapters.localdb.Offer
+    this.orderEntity = new OrderEntity()
+    this.OrderModel = this.adapters.localdb.Order
     this.bch = this.adapters.bch
     this.config = config
   }
 
-  // Create a new offer model and add it to the Mongo database.
-  async createOffer (entryObj) {
+  // Create a new order model and add it to the Mongo database.
+  async createOrder (entryObj) {
     try {
       console.log(
-        `createOffer() entryObj: ${JSON.stringify(entryObj, null, 2)}`
+        `createOrder() entryObj: ${JSON.stringify(entryObj, null, 2)}`
       )
 
       // Input Validation
-      const offerEntity = this.offerEntity.validate(entryObj)
+      const orderEntity = this.orderEntity.validate(entryObj)
 
-      // Ensure sufficient AVAX tokens exist to create the offer.
-      await this.ensureFunds(offerEntity)
+      // Ensure sufficient AVAX tokens exist to create the order.
+      await this.ensureFunds(orderEntity)
 
       // Ensure BCH wallet has finished initializing
       await this.adapters.wallet.bchWallet.walletInfoPromise
@@ -44,39 +44,40 @@ class OfferLib {
 
       // Move the tokens to holding address.
       const addressInfo = await this.getAddress()
-      const utxoInfo = await this.moveTokens(offerEntity, addressInfo)
+      const utxoInfo = await this.moveTokens(orderEntity, addressInfo)
       console.log('utxoInfo: ', utxoInfo)
 
       // create partial tx with the token inputs and avax output
       await this.adapters.wallet.bchWallet.bchjs.Util.sleep(3000)
       const partialTx = await this.adapters.wallet.createPartialTxHex(
-        offerEntity.rateInSats,
+        orderEntity.rateInSats,
         addressInfo.privateKey
       )
 
       // Get the ticker and name of the token.
       const tokenTx = await this.adapters.wallet.getTransaction(entryObj.tokenId)
       // console.log('tokenTx: ', tokenTx)
-      offerEntity.name = tokenTx.unsignedTx.transaction.name
-      offerEntity.symbol = tokenTx.unsignedTx.transaction.symbol
+      orderEntity.name = tokenTx.unsignedTx.transaction.name
+      orderEntity.symbol = tokenTx.unsignedTx.transaction.symbol
 
-      // Update the offer with the new UTXO information and the partialTx information.
-      offerEntity.utxoTxid = utxoInfo.txid
-      offerEntity.utxoVout = utxoInfo.vout
-      offerEntity.txHex = partialTx.txHex
-      offerEntity.addrReferences = partialTx.addrReferences
-      offerEntity.hdIndex = addressInfo.hdIndex
+      // Update the order with the new UTXO information and the partialTx information.
+      orderEntity.utxoTxid = utxoInfo.txid
+      orderEntity.utxoVout = utxoInfo.vout
+      orderEntity.txHex = partialTx.txHex
+      orderEntity.addrReferences = partialTx.addrReferences
+      orderEntity.hdIndex = addressInfo.hdIndex
+      orderEntity.dataType = 'offer'
 
-      // Add offer to P2WDB.
+      // Add order to P2WDB.
       const hash = await this.adapters.p2wdb.write({
         wif: this.adapters.wallet.bchWallet.walletInfo.privateKey,
-        data: offerEntity,
+        data: orderEntity,
         appId: this.config.appId
       })
 
-      offerEntity.p2wdbHash = hash
-      const offerEntry = new this.OfferModel(offerEntity)
-      await offerEntry.save()
+      orderEntity.p2wdbHash = hash
+      const orderEntry = new this.OrderModel(orderEntity)
+      await orderEntry.save()
       // console.log('hash: ', hash)
 
       // Update the UTXO store in both wallets.
@@ -88,28 +89,28 @@ class OfferLib {
 
       return hash
     } catch (err) {
-      wlogger.error('Error in use-cases/createOffer())')
+      wlogger.error('Error in use-cases/createOrder())')
       console.log(err)
       throw err
     }
   }
 
-  // Move the tokens indicated in the offer to a temporary holding address.
+  // Move the tokens indicated in the order to a temporary holding address.
   // This will generate the UTXO used in the Signal message. This function
   // moves the funds and returns the UTXO information.
-  async moveTokens (offerEntity, addressInfo) {
+  async moveTokens (orderEntity, addressInfo) {
     try {
       console.log('addressInfo: ', addressInfo)
 
       // Turn token into sats
       const assets = this.adapters.wallet.avaxWallet.utxos.assets
-      const asset = assets.find(item => item.assetID === offerEntity.tokenId)
-      const amount = offerEntity.numTokens * Math.pow(10, asset.denomination)
+      const asset = assets.find(item => item.assetID === orderEntity.tokenId)
+      const amount = orderEntity.numTokens * Math.pow(10, asset.denomination)
 
       const receiver = {
         address: addressInfo.address,
         amount,
-        assetID: offerEntity.tokenId
+        assetID: orderEntity.tokenId
       }
       console.log(`receiver: ${JSON.stringify(receiver, null, 2)}`)
 
@@ -137,25 +138,25 @@ class OfferLib {
   }
 
   // Ensure that the wallet has enough AVAX and tokens to complete the trade.
-  async ensureFunds (offerEntity) {
+  async ensureFunds (orderEntity) {
     try {
       // Get Assets.
       const assets = this.adapters.wallet.avaxWallet.utxos.assets
 
-      // Sell Offer
-      if (offerEntity.buyOrSell.includes('sell')) {
-        const asset = assets.find(item => item.assetID === offerEntity.tokenId)
+      // Sell Order
+      if (orderEntity.buyOrSell.includes('sell')) {
+        const asset = assets.find(item => item.assetID === orderEntity.tokenId)
 
         // Turn token into sats
         const denomination = asset.denomination || 0
-        const amount = offerEntity.numTokens * Math.pow(10, denomination)
+        const amount = orderEntity.numTokens * Math.pow(10, denomination)
         if (!asset || asset.amount < amount) {
           throw new Error(
-            'App wallet does not have enough tokens to satisfy the SELL offer.'
+            'App wallet does not have enough tokens to satisfy the SELL order.'
           )
         }
       } else {
-        // Buy Offer
+        // Buy Order
       }
 
       return true
@@ -178,38 +179,40 @@ class OfferLib {
         hdIndex: keypair.hdIndex
       }
     } catch (error) {
-      console.log(`Error on offer/getAddress(): ${error.message}`)
+      console.log(`Error on order/getAddress(): ${error.message}`)
       throw error
     }
   }
 
-  async listOffers () {
+  async listOrders () {
     try {
-      return this.OfferModel.find()
+      return this.OrderModel.find()
     } catch (error) {
-      console.log(`Error on offer/listOffers(): ${error.message}`)
+      console.log(`Error on order/listOrders(): ${error.message}`)
       throw error
     }
   }
 
-  async findOfferByHash (p2wdbHash) {
+  async findOrderByHash (p2wdbHash) {
+    console.log('findOrderByHash() p2wdbHash: ', p2wdbHash)
+
     try {
       if (typeof p2wdbHash !== 'string' || !p2wdbHash) {
         throw new Error('p2wdbHash must be a string')
       }
 
-      const offer = await this.OfferModel.findOne({ p2wdbHash })
+      const order = await this.OrderModel.findOne({ p2wdbHash })
 
-      if (!offer) {
-        throw new Error('offer not found')
+      if (!order) {
+        throw new Error('order not found')
       }
 
-      return offer.toObject()
+      return order.toObject()
     } catch (err) {
-      console.error('Error in findOffer(): ', err)
+      console.error('Error in findOrder(): ', err)
       throw err
     }
   }
 }
 
-module.exports = OfferLib
+module.exports = OrderLib
