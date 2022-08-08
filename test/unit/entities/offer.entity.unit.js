@@ -22,17 +22,17 @@ describe('#Offer-Entity', () => {
   afterEach(() => sandbox.restore())
 
   describe('#validate', () => {
-    it('should throw an error if data is not provided', () => {
-      try {
-        uut.validate()
-      } catch (err) {
-        // console.log(err)
-        assert.include(
-          err.message,
-          'Input to offer.validate() must be an object with a data property.'
-        )
-      }
-    })
+    // it('should throw an error if data is not provided', () => {
+    //   try {
+    //     uut.validate()
+    //   } catch (err) {
+    //     // console.log(err)
+    //     assert.include(
+    //       err.message,
+    //       'Input to offer.validate() must be an object with a data property.'
+    //     )
+    //   }
+    // })
 
     it('should throw an error if messageType is not included', () => {
       try {

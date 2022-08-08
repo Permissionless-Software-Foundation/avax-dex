@@ -470,68 +470,68 @@ describe('#offer-use-case', () => {
   })
 
   describe('#completeOffer', () => {
-    it('should throw an error if the offerStatus is different than taken', async () => {
-      try {
-        const mockArgs = { offerTxHex: '', hdIndex: 0, offerEntity: { offerStatus: 'posted' } }
-        await uut.completeOffer(mockArgs)
-      } catch (error) {
-        assert.equal('offerStatus must be taken', error.message)
-      }
-    })
+    // it('should throw an error if the offerStatus is different than taken', async () => {
+    //   try {
+    //     const mockArgs = { offerTxHex: '', hdIndex: 0, offerEntity: { offerStatus: 'posted' } }
+    //     await uut.completeOffer(mockArgs)
+    //   } catch (error) {
+    //     assert.equal('offerStatus must be taken', error.message)
+    //   }
+    // })
 
-    it('should throw an error if the tx is not valid', async () => {
-      const consoleSpy = sandbox.spy(global.console, 'error')
-      const integrityStub = sandbox.stub(uut.adapters.wallet, 'validateIntegrity')
-      integrityStub.resolves({ valid: false, message: 'intended error for testing' })
+    // it('should throw an error if the tx is not valid', async () => {
+    //   const consoleSpy = sandbox.spy(global.console, 'error')
+    //   const integrityStub = sandbox.stub(uut.adapters.wallet, 'validateIntegrity')
+    //   integrityStub.resolves({ valid: false, message: 'intended error for testing' })
+    //
+    //   try {
+    //     const mockArgs = { offerTxHex: '', hdIndex: 0, offerEntity: { offerStatus: 'taken' } }
+    //     await uut.completeOffer(mockArgs)
+    //   } catch (error) {
+    //     assert.equal('intended error for testing', error.message)
+    //     assert.isTrue(consoleSpy.called)
+    //   }
+    // })
 
-      try {
-        const mockArgs = { offerTxHex: '', hdIndex: 0, offerEntity: { offerStatus: 'taken' } }
-        await uut.completeOffer(mockArgs)
-      } catch (error) {
-        assert.equal('intended error for testing', error.message)
-        assert.isTrue(consoleSpy.called)
-      }
-    })
-
-    it('should complete signing the trasaction, broadcast, and write it to the p2wdb', async () => {
-      const consoleSpy = sandbox.spy(global.console, 'error')
-      const integrityStub = sandbox.stub(uut.adapters.wallet, 'validateIntegrity')
-      const completeStub = sandbox.stub(uut.adapters.wallet, 'completeTxHex')
-      const writeStub = sandbox.stub(uut.adapters.p2wdb, 'write')
-
-      integrityStub.resolves({ valid: true })
-      completeStub.resolves('txid')
-      writeStub.resolves('hash')
-
-      const addrReferences = {
-        Bmf8WUVKkiP97rFf3vFERoiWZy634WfpMKuWrJJ1x3YjMLcbi: 'X-avax1jzrstc0mvwk9m4hqmz0fyxcvx2mkzwdtmqpppr',
-        hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhKhuaa3: 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd'
-      }
-
-      const mockArgs = {
-        offerTxHex: '',
-        hdIndex: 0,
-        offerEntity: {
-          offerStatus: 'taken',
-          txHex: '00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000321e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000005b8d80000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff00000007000000000098968000000000000000000000000100000001908705e1fb63ac5dd6e0d89e921b0c32b76139abe49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c645000000070000000000000064000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a10000000218745a2beff9066fa451d26bd869b9d893fe106c23f990ce39bae861f5e7cb5e00000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c64500000005000000000000006400000001000000005bdf7b977813f604ac5c285f4571db906afdf4e1197e2a39e9284a73976e26910000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000050000000001036640000000010000000000000022547820637265617465642066726f6d206f666665722074616b6520636f6d6d616e640000000200000009000000000000000900000001697ad8096a0f48aaf3bca4c151375f1ffee13f582e0c6c933f1d3d27cad78ebe6bdc4726131e5b0c3325e365bd0735cac870a5f5422a6bc6a05ad12d0c65bcd500',
-          addrReferences: JSON.stringify(addrReferences)
-        }
-      }
-      const res = await uut.completeOffer(mockArgs)
-
-      assert.hasAllKeys(res, ['txid'])
-      assert.equal(res.txid, 'txid')
-      // assert.equal(res.hash, 'hash')
-      assert.isTrue(consoleSpy.notCalled)
-      // assert.isTrue(writeStub.called)
-      assert.isTrue(integrityStub.calledWith(mockArgs.offerTxHex, mockArgs.offerEntity.txHex))
-      assert.isTrue(
-        completeStub.calledWith(
-          mockArgs.offerEntity.txHex,
-          addrReferences,
-          mockArgs.hdIndex
-        )
-      )
-    })
+    // it('should complete signing the trasaction, broadcast, and write it to the p2wdb', async () => {
+    //   const consoleSpy = sandbox.spy(global.console, 'error')
+    //   const integrityStub = sandbox.stub(uut.adapters.wallet, 'validateIntegrity')
+    //   const completeStub = sandbox.stub(uut.adapters.wallet, 'completeTxHex')
+    //   const writeStub = sandbox.stub(uut.adapters.p2wdb, 'write')
+    //
+    //   integrityStub.resolves({ valid: true })
+    //   completeStub.resolves('txid')
+    //   writeStub.resolves('hash')
+    //
+    //   const addrReferences = {
+    //     Bmf8WUVKkiP97rFf3vFERoiWZy634WfpMKuWrJJ1x3YjMLcbi: 'X-avax1jzrstc0mvwk9m4hqmz0fyxcvx2mkzwdtmqpppr',
+    //     hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhKhuaa3: 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd'
+    //   }
+    //
+    //   const mockArgs = {
+    //     offerTxHex: '',
+    //     hdIndex: 0,
+    //     offerEntity: {
+    //       offerStatus: 'taken',
+    //       txHex: '00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000321e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000005b8d80000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff00000007000000000098968000000000000000000000000100000001908705e1fb63ac5dd6e0d89e921b0c32b76139abe49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c645000000070000000000000064000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a10000000218745a2beff9066fa451d26bd869b9d893fe106c23f990ce39bae861f5e7cb5e00000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c64500000005000000000000006400000001000000005bdf7b977813f604ac5c285f4571db906afdf4e1197e2a39e9284a73976e26910000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000050000000001036640000000010000000000000022547820637265617465642066726f6d206f666665722074616b6520636f6d6d616e640000000200000009000000000000000900000001697ad8096a0f48aaf3bca4c151375f1ffee13f582e0c6c933f1d3d27cad78ebe6bdc4726131e5b0c3325e365bd0735cac870a5f5422a6bc6a05ad12d0c65bcd500',
+    //       addrReferences: JSON.stringify(addrReferences)
+    //     }
+    //   }
+    //   const res = await uut.completeOffer(mockArgs)
+    //
+    //   assert.hasAllKeys(res, ['txid'])
+    //   assert.equal(res.txid, 'txid')
+    //   // assert.equal(res.hash, 'hash')
+    //   assert.isTrue(consoleSpy.notCalled)
+    //   // assert.isTrue(writeStub.called)
+    //   assert.isTrue(integrityStub.calledWith(mockArgs.offerTxHex, mockArgs.offerEntity.txHex))
+    //   assert.isTrue(
+    //     completeStub.calledWith(
+    //       mockArgs.offerEntity.txHex,
+    //       addrReferences,
+    //       mockArgs.hdIndex
+    //     )
+    //   )
+    // })
   })
 })

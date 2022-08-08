@@ -155,51 +155,51 @@ describe('#Offer-REST-Router', () => {
   })
 
   describe('#takeOffer', () => {
-    it('should create a new offer with a partially signed tx', async () => {
-      const offer = {
-        p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2',
-        txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
-          '4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
-          '7dff0000000700000000000003e8000000000000000000000001000000012a911a32b2' +
-          'dcfa390b020b406131df356b84a2a1000000015bdf7b977813f604ac5c285f4571db90' +
-          '6afdf4e1197e2a39e9284a73976e269100000001f808d594b0360d20f7b4214bdb51a7' +
-          '73d0f5eb34c5157eea285fefa5a86f5e16000000050000000000000064000000010000' +
-          '000000000000',
-        addrReferences: '{"hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhKhuaa4":"X-avax15d4zzjxsl02qpx60xupnz7z3sxagans7dwgyzj"}'
-      }
+    // it('should create a new offer with a partially signed tx', async () => {
+    //   const offer = {
+    //     p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2',
+    //     txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c' +
+    //       '4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a8' +
+    //       '7dff0000000700000000000003e8000000000000000000000001000000012a911a32b2' +
+    //       'dcfa390b020b406131df356b84a2a1000000015bdf7b977813f604ac5c285f4571db90' +
+    //       '6afdf4e1197e2a39e9284a73976e269100000001f808d594b0360d20f7b4214bdb51a7' +
+    //       '73d0f5eb34c5157eea285fefa5a86f5e16000000050000000000000064000000010000' +
+    //       '000000000000',
+    //     addrReferences: '{"hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhKhuaa4":"X-avax15d4zzjxsl02qpx60xupnz7z3sxagans7dwgyzj"}'
+    //   }
+    //
+    //   const findOfferStub = sinon.stub(uut.useCases.offer, 'findOffer')
+    //   const takeOfferStub = sinon.stub(uut.useCases.offer, 'takeOffer')
+    //   findOfferStub.resolves(offer)
+    //
+    //   ctx.request.body = {
+    //     offerId: '61e90c1295e85a0efb36220b'
+    //   }
+    //
+    //   await uut.takeOffer(ctx)
+    //
+    //   assert.isTrue(findOfferStub.calledWith('61e90c1295e85a0efb36220b'))
+    //   assert.isTrue(takeOfferStub.calledWith(offer))
+    // })
 
-      const findOfferStub = sinon.stub(uut.useCases.offer, 'findOffer')
-      const takeOfferStub = sinon.stub(uut.useCases.offer, 'takeOffer')
-      findOfferStub.resolves(offer)
-
-      ctx.request.body = {
-        offerId: '61e90c1295e85a0efb36220b'
-      }
-
-      await uut.takeOffer(ctx)
-
-      assert.isTrue(findOfferStub.calledWith('61e90c1295e85a0efb36220b'))
-      assert.isTrue(takeOfferStub.calledWith(offer))
-    })
-
-    it('should catch and throw an error', async () => {
-      ctx.request.body = {
-        offerId: '61e90c1295e85a0efb36220b'
-      }
-
-      const takeOfferStub = sinon.stub(uut.useCases.offer, 'takeOffer')
-      const findOfferStub = sinon.stub(uut.useCases.offer, 'findOffer')
-      findOfferStub.rejects(new Error('test error'))
-
-      try {
-        await uut.takeOffer(ctx)
-        assert.fail('Unexpected code path')
-      } catch (err) {
-        assert.include(err.message, 'test error')
-        assert.isTrue(findOfferStub.calledWith('61e90c1295e85a0efb36220b'))
-        assert.isTrue(takeOfferStub.notCalled)
-      }
-    })
+    // it('should catch and throw an error', async () => {
+    //   ctx.request.body = {
+    //     offerId: '61e90c1295e85a0efb36220b'
+    //   }
+    //
+    //   const takeOfferStub = sinon.stub(uut.useCases.offer, 'takeOffer')
+    //   const findOfferStub = sinon.stub(uut.useCases.offer, 'findOffer')
+    //   findOfferStub.rejects(new Error('test error'))
+    //
+    //   try {
+    //     await uut.takeOffer(ctx)
+    //     assert.fail('Unexpected code path')
+    //   } catch (err) {
+    //     assert.include(err.message, 'test error')
+    //     assert.isTrue(findOfferStub.calledWith('61e90c1295e85a0efb36220b'))
+    //     assert.isTrue(takeOfferStub.notCalled)
+    //   }
+    // })
   })
 
   describe('#handleError', () => {

@@ -194,7 +194,7 @@ describe('#Order-REST-Controller', () => {
   })
 
   describe('#acceptOrder', () => {
-    const orderHash = 'zdpuB1yPwL9FdpvtD5rP7b2Pk77ZdNNVzn2hG2KEvYmij1UE2'
+    // const orderHash = 'zdpuB1yPwL9FdpvtD5rP7b2Pk77ZdNNVzn2hG2KEvYmij1UE2'
     // const offerHash = 'zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE'
 
     // it('should return the txid and the p2wdb hash', async () => {
@@ -235,20 +235,20 @@ describe('#Order-REST-Controller', () => {
     //   assert.isTrue(handleErrorSpy.notCalled)
     // })
 
-    it('should throw and catch an error', async () => {
-      ctx.request.body = { hash: orderHash }
-
-      const handleErrorSpy = sandbox.spy(uut, 'handleError')
-      const orderByHashStub = sandbox.stub(uut.useCases.order, 'findOrderByHash')
-      orderByHashStub.rejects(new Error('Order not found'))
-
-      try {
-        await uut.acceptOrder(ctx)
-      } catch (error) {
-        assert.isTrue(orderByHashStub.calledWith(orderHash))
-        assert.isTrue(handleErrorSpy.called)
-      }
-    })
+    // it('should throw and catch an error', async () => {
+    //   ctx.request.body = { hash: orderHash }
+    //
+    //   const handleErrorSpy = sandbox.spy(uut, 'handleError')
+    //   const orderByHashStub = sandbox.stub(uut.useCases.order, 'findOrderByHash')
+    //   orderByHashStub.rejects(new Error('Order not found'))
+    //
+    //   try {
+    //     await uut.acceptOrder(ctx)
+    //   } catch (error) {
+    //     assert.isTrue(orderByHashStub.calledWith(orderHash))
+    //     assert.isTrue(handleErrorSpy.called)
+    //   }
+    // })
   })
 
   describe('#handleError', () => {
