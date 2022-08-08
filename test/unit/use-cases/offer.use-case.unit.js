@@ -12,12 +12,9 @@ const sinon = require('sinon')
 // Unit under test (uut)
 const OfferLib = require('../../../src/use-cases/offer')
 const adapters = require('../mocks/adapters')
-const { AvalancheWallet } = require('../mocks/adapters/wallet')
 
 describe('#offer-use-case', () => {
-  /** @type {OfferLib} */
   let uut
-  /** @type {sinon.SinonSandbox} */
   let sandbox
 
   before(async () => {
@@ -27,7 +24,7 @@ describe('#offer-use-case', () => {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox()
-    adapters.wallet.avaxWallet.setUtxos()
+
     uut = new OfferLib({ adapters })
   })
 
@@ -39,6 +36,7 @@ describe('#offer-use-case', () => {
         uut = new OfferLib()
 
         assert.fail('Unexpected code path')
+        console.log(uut) // linter
       } catch (err) {
         assert.include(
           err.message,
@@ -49,191 +47,105 @@ describe('#offer-use-case', () => {
   })
 
   describe('#createOffer', () => {
-    it('should create an offer and return the hash', async () => {
-      const entryObj = {
-        lokadId: 'SWP',
-        messageType: 1,
-        messageClass: 1,
-        tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        buyOrSell: 'sell',
-        rateInSats: 1000,
-        minSatsToExchange: 1250,
-        numTokens: 1
-      }
-
-      const newAddress = await uut.getAddress(1)
-
-      // Mock dependencies
-      sandbox.stub(uut.offerEntity, 'validate').returns(entryObj)
-      sandbox.stub(uut, 'ensureFunds').resolves()
-      sandbox.stub(uut.adapters.p2wdb, 'checkForSufficientFunds').resolves()
-      sandbox.stub(uut, 'getAddress').resolves(newAddress)
-      sandbox.stub(uut, 'moveTokens').resolves({ txid: 'fakeTxid', vout: '000000' })
-      sandbox.stub(uut.adapters.wallet, 'createPartialTxHex').resolves({
-        txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0' +
-          '000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000' +
-          '000070000000000002710000000000000000000000001000000012a911a32b2dcfa390b020' +
-          'b406131df356b84a2a100000001db20a53856ff6c6a1ea2721ac5c007698f9e5dba157a3f1' +
-          '4aac0a26521f112a200000002f808d594b0360d20f7b4214bdb51a773d0f5eb34c5157eea2' +
-          '85fefa5a86f5e16000000050000000000013043000000010000000000000000',
-        addrReferences: '{"2fWKUBaTWfrbs5uHJvnFzyLsBg3b7yNkWHFYWrdGJYHCRwa3ww":"X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd"}'
-      })
-      sandbox.stub(uut.adapters.p2wdb, 'write').resolves('fakeHash')
-      sandbox
-        .stub(uut.adapters.wallet.bchWallet.bchjs.Util, 'sleep')
-        .resolves()
-      sandbox.stub(uut.adapters.wallet, 'getTransaction').resolves({
-        unsignedTx: {
-          transaction: {
-            name: 'testName',
-            symbol: 'testSymbol'
-          }
-        }
-      })
-
-      const result = await uut.createOffer(entryObj)
-
-      assert.isString(result)
-      assert.equal(result, 'fakeHash')
-    })
-
-    it('should catch and throw an error', async () => {
-      try {
-        // Force an error
-        sandbox
-          .stub(uut.offerEntity, 'validate')
-          .throws(new Error('test error'))
-
-        await uut.createOffer()
-
-        assert.fail('Unexpected code path')
-      } catch (err) {
-        assert.include(err.message, 'test error')
-      }
-    })
-  })
-
-  describe('#ensureFunds', () => {
-    it('should return true if wallet has enough funds for a sell order', async () => {
-      const offerEntity = {
-        lokadId: 'SWP',
-        messageType: 1,
-        messageClass: 1,
-        tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        buyOrSell: 'sell',
-        rateInSats: 1000,
-        minSatsToExchange: 0,
-        numTokens: 1
-      }
-
-      const result = await uut.ensureFunds(offerEntity)
-
-      assert.equal(result, true)
-    })
-
-    it('should throw an error if the wallet doesnt have enough tokens', async () => {
-      try {
-        const offerEntity = {
-          lokadId: 'SWP',
+    it('should ignore an offer if utxo has been spent', async () => {
+      const offerObj = {
+        appId: 'swapTest555',
+        data: {
           messageType: 1,
           messageClass: 1,
-          tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+          tokenId: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
           buyOrSell: 'sell',
           rateInSats: 1000,
-          minSatsToExchange: 0,
-          numTokens: 4
-        }
-        await uut.ensureFunds(offerEntity)
-        assert.fail('unexpected result')
-      } catch (error) {
-        assert.include(error.message, 'App wallet does not have enough tokens to satisfy the SELL offer')
+          minSatsToExchange: 10,
+          numTokens: 0.02,
+          utxoTxid: '23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK',
+          utxoVout: 1,
+          txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b000',
+          addrReferences: '{"23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa493fANVn":"X-avax1swa5l9h5cax8jwne2usxp88rwnr4n7t699hj0g"}'
+        },
+        timestamp: '2021-09-20T17:54:26.395Z',
+        localTimeStamp: '9/20/2021, 10:54:26 AM',
+        txid: '46f50f2a0cf44e3ed70dfb0618ef3ebfee57aabcf229b5d2d17c07322b54a8d7',
+        hash: 'zdpuB2X25AZCKo3wpr4sSbw44vqPWJRqcxWQRHZccK5BdtoGD'
       }
+
+      // Mock dependencies
+      sandbox.stub(uut.adapters.bchjs.Blockchain, 'getTxOut').resolves(null)
+
+      const result = await uut.createOffer(offerObj)
+      // console.log('result: ', result)
+
+      assert.equal(result, false)
     })
 
-    it('should return true if buy', async () => {
-      const offerEntity = { buyOrSell: 'buy' }
-      const result = await uut.ensureFunds(offerEntity)
+    it('should create an offer and return the hash', async () => {
+      const offerObj = {
+        appId: 'swapTest555',
+        data: {
+          messageType: 1,
+          messageClass: 1,
+          tokenId: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
+          name: 'testName',
+          symbol: 'testSymbol',
+          buyOrSell: 'sell',
+          rateInSats: 1000,
+          minSatsToExchange: 10,
+          numTokens: 0.02,
+          utxoTxid: '23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK',
+          utxoVout: 1,
+          txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b000',
+          addrReferences: '{"23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa493fANVn":"X-avax1swa5l9h5cax8jwne2usxp88rwnr4n7t699hj0g"}'
+        },
+        timestamp: '2021-09-20T17:54:26.395Z',
+        localTimeStamp: '9/20/2021, 10:54:26 AM',
+        txid: '46f50f2a0cf44e3ed70dfb0618ef3ebfee57aabcf229b5d2d17c07322b54a8d7',
+        hash: 'zdpuB2X25AZCKo3wpr4sSbw44vqPWJRqcxWQRHZccK5BdtoGD'
+      }
+
+      // Mock dependencies
+      sandbox.stub(uut.adapters.wallet, 'getTxOut').resolves({
+        asset: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
+        amount: 100,
+        address: 'X-avax1l9g0vqng5jkd8xupdn8nshhlhcdm6nszkqw7zh',
+        status: 'unspent'
+      })
+
+      const result = await uut.createOffer(offerObj)
+      // console.log('result: ', result)
 
       assert.equal(result, true)
     })
-  })
 
-  describe('#moveTokens', () => {
-    it('should move tokens to the holding address', async () => {
-      const offerEntity = {
-        lokadId: 'SWP',
-        messageType: 1,
-        messageClass: 1,
-        tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        buyOrSell: 'sell',
-        rateInSats: 1000,
-        minSatsToExchange: 0,
-        numTokens: 1
-      }
-
-      const walletInfo = await uut.getAddress(1)
-
-      sandbox.stub(uut.adapters.wallet.avaxWallet, 'send').resolves('fakeTxid')
-      sandbox.stub(uut.adapters.wallet, 'findTxOut').resolves({ vout: 1 })
-
-      const result = await uut.moveTokens(offerEntity, walletInfo)
-      // console.log('result: ', result)
-
-      assert.property(result, 'txid')
-      assert.property(result, 'vout')
-
-      assert.equal(result.txid, 'fakeTxid')
-      assert.equal(result.vout, 1)
-    })
-
-    it('should catch an error', async () => {
-      sandbox.stub(uut.adapters.wallet.avaxWallet, 'send').rejects(
-        new Error('intended error')
-      )
-
-      const offerEntity = {
-        lokadId: 'SWP',
-        messageType: 1,
-        messageClass: 1,
-        tokenId: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
-        buyOrSell: 'sell',
-        rateInSats: 1000,
-        minSatsToExchange: 0,
-        numTokens: 1
+    it('should throw an error', async () => {
+      sandbox.stub(uut.adapters.wallet, 'getTxOut').rejects(new Error('intended error'))
+      const offerObj = {
+        appId: 'swapTest555',
+        data: {
+          messageType: 1,
+          messageClass: 1,
+          tokenId: '2aK8oMc5izZbmSsBiNzb6kPNjXeiQGPLUy1sFqoF3d9QEzi9si',
+          name: 'testName',
+          symbol: 'testSymbol',
+          buyOrSell: 'sell',
+          rateInSats: 1000,
+          minSatsToExchange: 10,
+          numTokens: 0.02,
+          utxoTxid: '23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa49732uJK',
+          utxoVout: 1,
+          txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b000',
+          addrReferences: '{"23SvdJmF5VMTnSVxBW8VfoMQ6zwFmJoUY3J61KvuKa493fANVn":"X-avax1swa5l9h5cax8jwne2usxp88rwnr4n7t699hj0g"}'
+        },
+        timestamp: '2021-09-20T17:54:26.395Z',
+        localTimeStamp: '9/20/2021, 10:54:26 AM',
+        txid: '46f50f2a0cf44e3ed70dfb0618ef3ebfee57aabcf229b5d2d17c07322b54a8d7',
+        hash: 'zdpuB2X25AZCKo3wpr4sSbw44vqPWJRqcxWQRHZccK5BdtoGD'
       }
 
       try {
-        const walletInfo = await uut.getAddress(1)
-        await uut.moveTokens(offerEntity, walletInfo)
-        assert.fail('unexpected result')
+        await uut.createOffer(offerObj)
+        assert.fail('unexpected path')
       } catch (error) {
         assert.include(error.message, 'intended error')
-      }
-    })
-  })
-
-  describe('#getAddress', () => {
-    it('should retrieve a new key pair from the HD key ring', async () => {
-      const result = await uut.getAddress(1)
-      // mock wallet
-      const wallet = new AvalancheWallet()
-      uut.adapters.wallet.avaxWallet = wallet
-
-      assert.hasAllKeys(result, ['address', 'privateKey', 'publicKey', 'hdIndex'])
-      assert.equal(result.address, wallet.walletInfo.address)
-      assert.equal(result.privateKey, wallet.walletInfo.privateKey)
-      assert.equal(result.publicKey, wallet.walletInfo.publicKey)
-      assert.equal(result.hdIndex, 1)
-    })
-
-    it('should catch and throw an error', async () => {
-      try {
-        sandbox.stub(uut.adapters.wallet, 'getAvaxKeyPair').throws(new Error('test error'))
-        await uut.getAddress(1)
-
-        assert.fail('Unexpected code path')
-      } catch (error) {
-        assert.include(error.message, 'test error')
       }
     })
   })
@@ -241,26 +153,27 @@ describe('#offer-use-case', () => {
   describe('#listOffers', () => {
     it('should return a list of offers', async () => {
       sandbox.stub(uut.OfferModel, 'find').resolves([{
-        _id: '61d8c3b6faabfd0d5f18cae7',
+        _id: '61d8c3b6faabfd0d5f18cae9',
         messageType: 1,
         messageClass: 1,
         tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        name: 'testName',
+        symbol: 'testSymbol',
         buyOrSell: 'sell',
         rateInSats: '1000',
         minSatsToExchange: '10',
         numTokens: 21,
         utxoTxid: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
         utxoVout: 1,
-        txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000000003e8000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a100000001a045bd411acbb02ab31b1ac9a29cbd9e27001d5940a9291fc053d7683e716afc00000001f808d594b0360d20f7b4214bdb51a773d0f5eb34c5157eea285fefa5a86f5e16000000050000000000000834000000010000000000000000',
-        addrReferences: '{"2Dawk4kFbEj5dmKcaEoZvmTfrWUcUFN22oEwMt1GByqMatzZbN":"X-avax1n72fnh2y2v56h5k8q08yze63yuykkkmxjqycf3"}',
-        hdIndex: 3,
+        timestamp: '',
+        localTimestamp: '',
         p2wdbHash: 'zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE'
       }])
 
       const offers = await uut.listOffers()
 
       assert.isArray(offers)
-      assert.hasAllKeys(offers[0], [
+      assert.hasAnyKeys(offers[0], [
         '_id',
         'messageType',
         'messageClass',
@@ -271,48 +184,244 @@ describe('#offer-use-case', () => {
         'numTokens',
         'utxoTxid',
         'utxoVout',
-        'txHex',
-        'addrReferences',
-        'hdIndex',
+        'timestamp',
+        'localTimestamp',
         'p2wdbHash'
       ])
     })
+  })
+
+  describe('#findOffer', () => {
+    it('should return an offer entity', async () => {
+      const findByIdStub = sandbox.stub(uut.OfferModel, 'findById')
+
+      findByIdStub.resolves({
+        toObject: () => ({
+          _id: '61e90c1295e85a0efb36220b',
+          messageType: 1,
+          messageClass: 1,
+          tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          name: 'testName',
+          symbol: 'testSymbol',
+          buyOrSell: 'sell',
+          rateInSats: 1000,
+          minSatsToExchange: 10,
+          numTokens: 1,
+          utxoTxid: 'hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhQzAKMy',
+          utxoVout: 1,
+          timestamp: '2022-01-20T07:15:20.744Z',
+          localTimestamp: '1/20/2022, 3:15:20 AM',
+          p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2',
+          __v: 0,
+          txHex: 'hex',
+          addrReferences: '{}'
+        })
+      })
+
+      const offer = await uut.findOffer('61e90c1295e85a0efb36220b')
+
+      assert.hasAnyKeys(offer, [
+        'messageType',
+        'messageClass',
+        'tokenId',
+        'buyOrSell',
+        'rateInSats',
+        'minSatsToExchange',
+        'numTokens',
+        'utxoTxid',
+        'utxoVout',
+        'offerStatus',
+        'txHex',
+        'addrReferences',
+        'timestamp',
+        'localTimestamp',
+        'txid',
+        'p2wdbHash',
+        'offerHash'
+      ])
+      assert.isTrue(findByIdStub.calledWith('61e90c1295e85a0efb36220b'))
+    })
 
     it('should throw an error', async () => {
+      const findByIdStub = sandbox.stub(uut.OfferModel, 'findById')
+      findByIdStub.resolves(null)
       try {
-        sandbox.stub(uut.OfferModel, 'find').rejects(new Error('localdb error'))
-        await uut.listOffers()
+        await uut.findOffer('61e90c1295e85a0efb36220b')
+        assert.fail('Unexpected code path')
       } catch (error) {
-        assert.include(error.message, 'localdb error')
+        assert.include(error.message, 'offer not found')
+      }
+    })
+  })
+
+  describe('#takeOffer', () => {
+    it('should partially sign the transcation and send it to the p2wdb', async () => {
+      const offerEntity = {
+        messageType: 1,
+        messageClass: 1,
+        tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+        name: 'testName',
+        symbol: 'testSymbol',
+        buyOrSell: 'sell',
+        rateInSats: 1000,
+        minSatsToExchange: 10,
+        numTokens: 1,
+        utxoTxid: 'hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhQzAKMy',
+        utxoVout: 1,
+        offerStatus: 'posted',
+        txHex: 'hex',
+        addrReferences: '{}',
+        timestamp: '2022-01-20T07:15:20.744Z',
+        localTimestamp: undefined,
+        txid: undefined,
+        p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2'
+      }
+
+      const TxStub = sandbox.stub(uut.adapters.wallet, 'takePartialTxHex')
+      TxStub.resolves({
+        txHex: 'hex',
+        addrReferences: '{}'
+      })
+
+      const writeStub = sandbox.stub(uut.adapters.p2wdb, 'write')
+      writeStub.resolves('somehash')
+
+      const hash = await uut.takeOffer(offerEntity)
+
+      assert.equal(hash, 'somehash')
+      assert.isTrue(TxStub.called)
+      assert.isTrue(writeStub.called)
+    })
+
+    it('should throw an error', async () => {
+      const offerEntity = { offerStatus: 'taken' }
+
+      try {
+        await uut.takeOffer(offerEntity)
+        assert.fail('Unexpected code path')
+      } catch (error) {
+        assert.include(error.message, 'offer already taken')
+      }
+    })
+  })
+
+  describe('#checkTakenOffer', () => {
+    const offerHash = 'zdpuB1yPwL9FdpvtD5rP7b2Pk77ZdNNVzn2hG2KEvYmij1UE2'
+
+    it('should return the offer if the offer has been taken', async () => {
+      const validateFromModelStub = sandbox.spy(uut.offerEntity, 'validateFromModel')
+      const findOneStub = sandbox.stub(uut.OfferModel, 'findOne')
+      findOneStub.resolves({
+        toObject: () => ({
+          _id: '61e96b2b97bb460640e211d6',
+          messageType: 1,
+          messageClass: 1,
+          tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          name: 'testName',
+          symbol: 'testSymbol',
+          buyOrSell: 'sell',
+          rateInSats: 1000,
+          minSatsToExchange: 10,
+          numTokens: 1,
+          utxoTxid: 'hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhQzAKMy',
+          utxoVout: 1,
+          offerStatus: 'taken',
+          txHex: '0000000000000000000',
+          addrReferences: '{}',
+          timestamp: '2022-01-20T14:01:05.410Z',
+          localTimestamp: '1/20/2022, 10:01:05 AM',
+          offerHash,
+          p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2',
+          __v: 0
+        })
+      })
+
+      const offer = await uut.checkTakenOffer(offerHash)
+      assert.hasAnyKeys(offer, [
+        'messageType',
+        'messageClass',
+        'tokenId',
+        'buyOrSell',
+        'rateInSats',
+        'minSatsToExchange',
+        'numTokens',
+        'utxoTxid',
+        'utxoVout',
+        'offerStatus',
+        'txHex',
+        'addrReferences',
+        'timestamp',
+        'localTimestamp',
+        'txid',
+        'p2wdbHash',
+        'offerHash'
+      ])
+      assert.isTrue(validateFromModelStub.called)
+      assert.isTrue(findOneStub.called)
+      assert.isTrue(findOneStub.calledWith({ offerHash, offerStatus: 'taken' }))
+    })
+
+    it('should return false if the offer has not been taken yet', async () => {
+      const validateFromModelStub = sandbox.stub(uut.offerEntity, 'validateFromModel')
+      const findOneStub = sandbox.stub(uut.OfferModel, 'findOne')
+      findOneStub.resolves(null)
+
+      const res = await uut.checkTakenOffer(offerHash)
+
+      assert.isTrue(findOneStub.called)
+      assert.isTrue(findOneStub.calledWith({ offerHash, offerStatus: 'taken' }))
+      assert.isFalse(res)
+      assert.isFalse(validateFromModelStub.called)
+    })
+
+    it('should throw an error', async () => {
+      const validateFromModelStub = sandbox.stub(uut.offerEntity, 'validateFromModel')
+      const findOneStub = sandbox.stub(uut.OfferModel, 'findOne')
+      findOneStub.rejects(new Error('intended error'))
+
+      try {
+        await uut.checkTakenOffer(offerHash)
+        assert.fail('Unexpected code path')
+      } catch (error) {
+        assert.include(error.message, 'intended error')
+
+        assert.isTrue(findOneStub.called)
+        assert.isTrue(findOneStub.calledWith({ offerHash, offerStatus: 'taken' }))
+        assert.isFalse(validateFromModelStub.called)
       }
     })
   })
 
   describe('#findOfferByHash', () => {
     it('should return an offer by a given p2wdb hash', async () => {
-      sandbox.stub(uut.OfferModel, 'findOne').resolves({
+      const findOne = sandbox.stub(uut.OfferModel, 'findOne')
+
+      findOne.resolves({
         toObject: () => ({
-          _id: '61d8c3b6faabfd0d5f18cae7',
+          _id: '61e90c1295e85a0efb36220b',
           messageType: 1,
           messageClass: 1,
           tokenId: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          name: 'testName',
+          symbol: 'testSymbol',
           buyOrSell: 'sell',
-          rateInSats: '1000',
-          minSatsToExchange: '10',
-          numTokens: 21,
-          utxoTxid: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
+          rateInSats: 1000,
+          minSatsToExchange: 10,
+          numTokens: 1,
+          utxoTxid: 'hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhQzAKMy',
           utxoVout: 1,
-          txHex: '00000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000000003e8000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a100000001a045bd411acbb02ab31b1ac9a29cbd9e27001d5940a9291fc053d7683e716afc00000001f808d594b0360d20f7b4214bdb51a773d0f5eb34c5157eea285fefa5a86f5e16000000050000000000000834000000010000000000000000',
-          addrReferences: '{"2Dawk4kFbEj5dmKcaEoZvmTfrWUcUFN22oEwMt1GByqMatzZbN":"X-avax1n72fnh2y2v56h5k8q08yze63yuykkkmxjqycf3"}',
-          hdIndex: 3,
-          p2wdbHash: 'zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE'
+          timestamp: '2022-01-20T07:15:20.744Z',
+          localTimestamp: '1/20/2022, 3:15:20 AM',
+          p2wdbHash: 'zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2',
+          __v: 0,
+          txHex: 'hex',
+          addrReferences: '{}'
         })
       })
 
-      const offer = await uut.findOfferByHash('zdpuAowSDiCFRffMBv4bv4zsNHzVpStqDKZU4UBKpiyEsVoHE')
+      const offer = await uut.findOfferByHash('zdpuB21PDBFyTfrckbJA8c339KgYudQydqEvU7xgUuqNnoWh2')
 
-      assert.hasAllKeys(offer, [
-        '_id',
+      assert.hasAnyKeys(offer, [
         'messageType',
         'messageClass',
         'tokenId',
@@ -322,10 +431,14 @@ describe('#offer-use-case', () => {
         'numTokens',
         'utxoTxid',
         'utxoVout',
+        'offerStatus',
         'txHex',
         'addrReferences',
-        'hdIndex',
-        'p2wdbHash'
+        'timestamp',
+        'localTimestamp',
+        'txid',
+        'p2wdbHash',
+        'offerHash'
       ])
     })
 
@@ -354,5 +467,71 @@ describe('#offer-use-case', () => {
         assert.isTrue(findSpy.called)
       }
     })
+  })
+
+  describe('#completeOffer', () => {
+    // it('should throw an error if the offerStatus is different than taken', async () => {
+    //   try {
+    //     const mockArgs = { offerTxHex: '', hdIndex: 0, offerEntity: { offerStatus: 'posted' } }
+    //     await uut.completeOffer(mockArgs)
+    //   } catch (error) {
+    //     assert.equal('offerStatus must be taken', error.message)
+    //   }
+    // })
+
+    // it('should throw an error if the tx is not valid', async () => {
+    //   const consoleSpy = sandbox.spy(global.console, 'error')
+    //   const integrityStub = sandbox.stub(uut.adapters.wallet, 'validateIntegrity')
+    //   integrityStub.resolves({ valid: false, message: 'intended error for testing' })
+    //
+    //   try {
+    //     const mockArgs = { offerTxHex: '', hdIndex: 0, offerEntity: { offerStatus: 'taken' } }
+    //     await uut.completeOffer(mockArgs)
+    //   } catch (error) {
+    //     assert.equal('intended error for testing', error.message)
+    //     assert.isTrue(consoleSpy.called)
+    //   }
+    // })
+
+    // it('should complete signing the trasaction, broadcast, and write it to the p2wdb', async () => {
+    //   const consoleSpy = sandbox.spy(global.console, 'error')
+    //   const integrityStub = sandbox.stub(uut.adapters.wallet, 'validateIntegrity')
+    //   const completeStub = sandbox.stub(uut.adapters.wallet, 'completeTxHex')
+    //   const writeStub = sandbox.stub(uut.adapters.p2wdb, 'write')
+    //
+    //   integrityStub.resolves({ valid: true })
+    //   completeStub.resolves('txid')
+    //   writeStub.resolves('hash')
+    //
+    //   const addrReferences = {
+    //     Bmf8WUVKkiP97rFf3vFERoiWZy634WfpMKuWrJJ1x3YjMLcbi: 'X-avax1jzrstc0mvwk9m4hqmz0fyxcvx2mkzwdtmqpppr',
+    //     hTmmsBQuBmR91X9xE2cNuveLd45ox7oAGvZukczQHXhKhuaa3: 'X-avax192g35v4jmnarjzczpdqxzvwlx44cfg4p0yk4qd'
+    //   }
+    //
+    //   const mockArgs = {
+    //     offerTxHex: '',
+    //     hdIndex: 0,
+    //     offerEntity: {
+    //       offerStatus: 'taken',
+    //       txHex: '00000000000000000001ed5f38341e436e5d46e2bb00b45d62ae97d1b050c64bc634ae10626739e35c4b0000000321e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff0000000700000000005b8d80000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a121e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff00000007000000000098968000000000000000000000000100000001908705e1fb63ac5dd6e0d89e921b0c32b76139abe49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c645000000070000000000000064000000000000000000000001000000012a911a32b2dcfa390b020b406131df356b84a2a10000000218745a2beff9066fa451d26bd869b9d893fe106c23f990ce39bae861f5e7cb5e00000001e49b53ab21c6f7b10bf8efb3e3bc0059954989b3d481a9cb862f4b0b7d57c64500000005000000000000006400000001000000005bdf7b977813f604ac5c285f4571db906afdf4e1197e2a39e9284a73976e26910000000021e67317cbc4be2aeb00677ad6462778a8f52274b9d605df2591b23027a87dff000000050000000001036640000000010000000000000022547820637265617465642066726f6d206f666665722074616b6520636f6d6d616e640000000200000009000000000000000900000001697ad8096a0f48aaf3bca4c151375f1ffee13f582e0c6c933f1d3d27cad78ebe6bdc4726131e5b0c3325e365bd0735cac870a5f5422a6bc6a05ad12d0c65bcd500',
+    //       addrReferences: JSON.stringify(addrReferences)
+    //     }
+    //   }
+    //   const res = await uut.completeOffer(mockArgs)
+    //
+    //   assert.hasAllKeys(res, ['txid'])
+    //   assert.equal(res.txid, 'txid')
+    //   // assert.equal(res.hash, 'hash')
+    //   assert.isTrue(consoleSpy.notCalled)
+    //   // assert.isTrue(writeStub.called)
+    //   assert.isTrue(integrityStub.calledWith(mockArgs.offerTxHex, mockArgs.offerEntity.txHex))
+    //   assert.isTrue(
+    //     completeStub.calledWith(
+    //       mockArgs.offerEntity.txHex,
+    //       addrReferences,
+    //       mockArgs.hdIndex
+    //     )
+    //   )
+    // })
   })
 })

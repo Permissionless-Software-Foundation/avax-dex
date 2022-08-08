@@ -9,23 +9,24 @@ const Order = new mongoose.Schema({
   name: { type: String },
   symbol: { type: String },
   buyOrSell: { type: String },
-  rateInSats: { type: Number },
-  minSatsToExchange: { type: Number },
-  signature: { type: String },
-  sigMsg: { type: String },
+  rateInSats: { type: String },
+  minSatsToExchange: { type: String },
+  numTokens: { type: Number },
+  signature: { type: String }, // this seems to be disposable now
+  sigMsg: { type: String }, // this seems to be disposable now
   utxoTxid: { type: String },
   utxoVout: { type: Number },
-  numTokens: { type: Number },
-  timestamp: { type: String },
 
   txHex: { type: String }, // hex of partial transaction.
   addrReferences: { type: String }, // Metadata needed when passing AVAX partial TXs.
-  orderStatus: { type: String },
+  hdIndex: { type: Number }, // HD index address holding the UTXO for this order.
 
-  localTimestamp: { type: String },
-  p2wdbTxid: { type: String },
-  p2wdbHash: { type: String },
-  offerHash: { type: String }
+  // Tracks ipfs-coord node that is managing this order.
+  orderIpfsId: { type: String },
+  orderBchAddr: { type: String },
+  orderPubKey: { type: String },
+
+  p2wdbHash: { type: String }
 })
 
 module.exports = mongoose.model('order', Order)

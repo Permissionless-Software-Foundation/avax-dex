@@ -1,5 +1,5 @@
 /*
-  REST API Controller library for the /offer route
+  REST API Controller library for the /order route
 */
 
 // const { wlogger } = require('../../../adapters/wlogger')
@@ -32,17 +32,13 @@ class OrderRESTControllerLib {
   // No api-doc documentation because this wont be a public endpoint
   async createOrder (ctx) {
     try {
-      console.log('body: ', ctx.request.body)
+      // console.log('body: ', ctx.request.body)
 
-      const orderObj = ctx.request.body
+      const orderObj = ctx.request.body.order
+      const hash = await _this.useCases.order.createOrder(orderObj)
 
-      await _this.useCases.order.createOrder(orderObj)
-
-      ctx.body = {
-        success: true
-      }
+      ctx.body = { hash }
     } catch (err) {
-      console.log('Error in createOrder REST API handler.')
       // console.log(`err.message: ${err.message}`)
       // console.log('err: ', err)
       // ctx.throw(422, err.message)
@@ -62,19 +58,47 @@ class OrderRESTControllerLib {
     }
   }
 
-  async takeOrder (ctx) {
+  async checkStatusByOrderHash (ctx) {
+    try {
+      const p2wdbOrderHash = ctx.request.body.hash
+      const order = await _this.useCases.order.checkTakenOrder(p2wdbOrderHash)
+
+      if (!order) {
+        ctx.body = {
+          order: false
+        }
+        return
+      }
+
+      ctx.body = {
+        order
+      }
+    } catch (error) {
+      console.log('Error in checkStatus REST API handler.')
+      _this.handleError(ctx, error)
+    }
+  }
+
+  async acceptOrder (ctx) {
     try {
       console.log('body: ', ctx.request.body)
 
-      const orderId = ctx.request.body.orderId
+      const offerHash = ctx.request.body.hash
 
       // Find the Order.
-      const orderEntity = await _this.useCases.order.findOrder(orderId)
+      const offerEntity = await _this.useCases.offer.findOfferByHash(offerHash)
+      console.log('offerEntity: ', offerEntity)
+
+      const orderEntity = await _this.useCases.order.findOrderByHash(offerEntity.offerHash)
 
       // 'Take' the Order.
-      const hash = await _this.useCases.order.takeOrder(orderEntity)
+      const { txid } = await _this.useCases.offer.completeOffer({
+        orderTxHex: orderEntity.txHex,
+        hdIndex: orderEntity.hdIndex,
+        orderEntity
+      })
 
-      ctx.body = { hash }
+      ctx.body = { txid }
     } catch (err) {
       console.log('Error in takeOrder REST API handler.')
       _this.handleError(ctx, err)

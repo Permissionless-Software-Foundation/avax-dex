@@ -1,9 +1,9 @@
 /*
-  A manual e2e test for creating a swap offer. This script 'makes' an offer,
+  A manual e2e test for creating a swap order. This script 'makes' an order,
   and starts off the first part of a three-part trade.
 
-  This script will register the Offer with the P2WDB, which will generate a
-  webhook, which will convert the Offer into an Order.
+  This script will register the Order with the P2WDB, which will generate a
+  webhook, which will convert the Order into an Offer.
 
   Ensure the REST API is up an running before running this test.
 */
@@ -14,7 +14,7 @@ const LOCALHOST = 'http://localhost:5700'
 
 async function start () {
   try {
-    const mockOffer = {
+    const mockOrder = {
       lokadId: 'SWP',
       messageType: 1,
       messageClass: 1,
@@ -27,8 +27,8 @@ async function start () {
 
     const options = {
       method: 'post',
-      url: `${LOCALHOST}/offer`,
-      data: { offer: mockOffer }
+      url: `${LOCALHOST}/order`,
+      data: { order: mockOrder }
     }
 
     const result = await axios(options)

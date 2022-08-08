@@ -1,7 +1,7 @@
 /*
   A manual e2e test for completing the second part of a three-part trade.
-  Use the list-orders.js script to list available orders. Use this take-order.js
-  script to take the other side of an order.
+  Use the list-offers.js script to list available offers. Use this take-offer.js
+  script to take issue a Counter-Offer to take the other side of an Offer.
 
   Ensure the REST API is up an running before running this test.
 */
@@ -14,9 +14,10 @@ async function start () {
   try {
     const options = {
       method: 'post',
-      url: `${LOCALHOST}/order/take`,
+      url: `${LOCALHOST}/offer/take`,
       data: {
-        orderId: '62e03459eb09e228d0b037ec'
+        // orderId: '62effc01365c7049432948ee'
+        offerP2wdbId: 'zdpuB1ZYFKmZPR1FhVFkY8usBMfuqstkKnpDDT8n4uVzXqmVe'
       }
     }
 

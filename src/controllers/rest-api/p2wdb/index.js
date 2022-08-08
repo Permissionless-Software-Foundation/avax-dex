@@ -1,30 +1,30 @@
 /*
-  REST API library for /mnemonic route.
-  This is called by the front end to retrieve the wallet mneomnics used by this
-  app.
+  REST API library for /p2wdb route.
+  This route handles incoming data from the P2WDB webhook, and routes the data
+  to the proper handler.
 */
 
 // Public npm libraries.
 const Router = require('koa-router')
 
 // Local libraries.
-const MnemonicRESTControllerLib = require('./controller')
+const P2WDBRESTControllerLib = require('./controller')
 
 let _this
 
-class MnemonicRouter {
+class P2WDBRouter {
   constructor (localConfig = {}) {
     // Dependency Injection.
     this.adapters = localConfig.adapters
     if (!this.adapters) {
       throw new Error(
-        'Instance of Adapters library required when instantiating /mnemonic REST Controller.'
+        'Instance of Adapters library required when instantiating /p2wdb REST Controller.'
       )
     }
     this.useCases = localConfig.useCases
     if (!this.useCases) {
       throw new Error(
-        'Instance of Use Cases library required when instantiating /mnemonic REST Controller.'
+        'Instance of Use Cases library required when instantiating /p2wdb REST Controller.'
       )
     }
 
@@ -34,10 +34,10 @@ class MnemonicRouter {
     }
 
     // Encapsulate dependencies.
-    this.mnemonicRESTController = new MnemonicRESTControllerLib(dependencies)
+    this.p2wdbRESTController = new P2WDBRESTControllerLib(dependencies)
 
     // Instantiate the router and set the base route.
-    const baseUrl = '/mnemonic'
+    const baseUrl = '/p2wdb'
     this.router = new Router({ prefix: baseUrl })
 
     _this = this
@@ -51,12 +51,7 @@ class MnemonicRouter {
     }
 
     // Define the routes and attach the controller.
-    // this.router.post('/', _this.orderRESTController.createOrder)
-    // this.router.get('/list', _this.orderRESTController.listOrders)
-    // this.router.post('/take', _this.orderRESTController.takeOrder)
-
-    this.router.get('/', _this.mnemonicRESTController.getMnemonics)
-    this.router.get('/price', _this.mnemonicRESTController.getPrice)
+    this.router.post('/', _this.p2wdbRESTController.routeWebhook)
 
     // Attach the Controller routes to the Koa app.
     app.use(_this.router.routes())
@@ -64,4 +59,4 @@ class MnemonicRouter {
   }
 }
 
-module.exports = MnemonicRouter
+module.exports = P2WDBRouter
