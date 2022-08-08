@@ -8,6 +8,7 @@
 
 // Load the Clean Architecture Adapters library
 const Adapters = require('../adapters')
+const TimerControllers = require('./timer-controllers')
 
 // Load the JSON RPC Controller.
 const JSONRPC = require('./json-rpc')
@@ -23,6 +24,8 @@ class Controllers {
   constructor (localConfig = {}) {
     this.adapters = new Adapters()
     this.useCases = new UseCases({ adapters: this.adapters })
+
+    this.timerControllers = new TimerControllers({ adapters: this.adapters, useCases: this.useCases })
   }
 
   // Spin up any adapter libraries that have async startup needs.

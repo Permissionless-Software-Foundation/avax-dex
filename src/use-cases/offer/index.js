@@ -257,6 +257,43 @@ class OfferUseCases {
       throw err
     }
   }
+
+  // This function is called by the garbage collection timer controller. It
+  // checks the UTXO associated with each Offer in the database. If the UTXO
+  // has been spent, the Order is deleted from the database.
+  async removeStaleOffers () {
+    try {
+      const now = new Date()
+      console.log(`Starting garbage collection for Offers at ${now.toLocaleString()}`)
+
+      // Get all Orders in the database.
+      const offers = await this.OfferModel.find({})
+      // console.log('orders: ', orders)
+
+      // Loop through each Order and ensure the UTXO is still valid.
+      for (let i = 0; i < offers.length; i++) {
+        const thisOffer = offers[i]
+        // console.log(`thisOrder: ${JSON.stringify(thisOrder, null, 2)}`)
+
+        // Check if UTXO is still valie
+        const result = await this.adapters.wallet.getTxOut(thisOffer.utxoTxid, thisOffer.utxoVout)
+        // console.log('result: ', result)
+
+        // null means UTXO has been spent and order is no longer valid.
+        if (result === null) {
+          console.log('Removing this Offer that contains an spent UTXO: ', JSON.stringify(thisOffer, null, 2))
+
+          // Delete the model from the database.
+          await thisOffer.remove()
+        }
+      }
+
+      return true
+    } catch (err) {
+      console.error('Error in removeStaleOffers()')
+      throw err
+    }
+  }
 }
 
 module.exports = OfferUseCases
