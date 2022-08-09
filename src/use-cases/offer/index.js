@@ -290,8 +290,8 @@ class OfferUseCases {
 
       return true
     } catch (err) {
-      console.error('Error in removeStaleOffers()')
-      throw err
+      console.error('Error in removeStaleOffers(): ', err)
+      // throw err
     }
   }
 }

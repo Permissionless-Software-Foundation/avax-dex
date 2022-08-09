@@ -244,8 +244,8 @@ class OrderLib {
         }
       }
     } catch (err) {
-      console.error('Error in removeStaleOrders()')
-      throw err
+      console.error('Error in removeStaleOrders(): ', err)
+      // throw err
     }
   }
 }

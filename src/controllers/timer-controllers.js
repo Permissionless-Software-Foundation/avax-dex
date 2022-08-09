@@ -31,8 +31,8 @@ class TimerControllers {
 
   // Start all the time-based controllers.
   startTimers () {
-    setInterval(this.gcOrders, 60000 * 5)
-    setInterval(this.gcOffers, 60000 * 5)
+    setInterval(this.gcOrders, 60000 * 2)
+    setInterval(this.gcOffers, 60000 * 2)
   }
 
   // Garbage Collect the Orders.
