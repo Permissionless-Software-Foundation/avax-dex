@@ -13,6 +13,8 @@ const ipfsCoordName = process.env.COORD_NAME
   ? process.env.COORD_NAME
   : 'ipfs-torlist-service-generic'
 
+const P2WDB_URL = process.env.P2WDB_URL ? process.env.P2WDB_URL : 'http://localhost:5010'
+
 module.exports = {
   // Configure TCP port.
   port: process.env.PORT || 5700,
@@ -74,10 +76,11 @@ module.exports = {
   // P2WDB webhook endpoint
   webhookService: process.env.WEBHOOKSERVICE
     ? process.env.WEBHOOKSERVICE
-    : 'http://localhost:5010/webhook', // P2WDB.
+    : `${P2WDB_URL}/webhook`, // P2WDB.
   webhookTarget: process.env.WEBHOOKTARGET
     ? process.env.WEBHOOKTARGET
     : 'http://localhost:5700/p2wdb',
+  p2wdbUrl: P2WDB_URL,
 
   // IPFS Ports
   ipfsTcpPort: process.env.IPFS_TCP_PORT ? process.env.IPFS_TCP_PORT : 4001,

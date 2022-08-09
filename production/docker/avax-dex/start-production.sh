@@ -25,6 +25,7 @@ export PORT=5700
 
 # avax-dex specific env vars
 export AVAX_DEX=production
+export P2WDB_URL=http://172.17.0.1:5667
 export WEBHOOKSERVICE=http://172.17.0.1:5667/webhook
 export WEBHOOKTARGET=http://172.17.0.1:5700/p2wdb
 
