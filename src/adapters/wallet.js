@@ -16,6 +16,8 @@ const AVAX_WALLET_FILE = `${__dirname.toString()}/../../wallet-avax.json`
 const PROOF_OF_BURN_QTY = 0.01
 const P2WDB_TOKEN_ID =
   '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0'
+const BCH_WALLET_URL = 'https://free-bch.fullstack.cash'
+const BCH_WALLET_INTERFACE = 'consumer-api'
 
 class WalletAdapter {
   constructor (localConfig = {}) {
@@ -58,7 +60,11 @@ class WalletAdapter {
           walletInstance = new this.AvaxWallet(undefined, { noUpdate: true })
           // walletInstance = new this.AvaxWallet(undefined)
         } else {
-          walletInstance = new this.BchWallet(undefined, { noUpdate: true })
+          walletInstance = new this.BchWallet(undefined, {
+            noUpdate: true,
+            restURL: BCH_WALLET_URL,
+            interface: BCH_WALLET_INTERFACE
+          })
           // walletInstance = new this.BchWallet(undefined)
         }
 
@@ -215,7 +221,11 @@ class WalletAdapter {
       //   restURL: bchjs.restURL,
       //   apiToken: bchjs.apiToken
       // }
-      const advancedConfig = {}
+      const advancedConfig = {
+        noUpdate: false,
+        restURL: BCH_WALLET_URL,
+        interface: BCH_WALLET_INTERFACE
+      }
 
       // Instantiate minimal-slp-wallet.
       this.bchWallet = new this.BchWallet(walletData.mnemonic, advancedConfig)

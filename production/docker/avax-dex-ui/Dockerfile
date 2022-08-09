@@ -68,6 +68,6 @@ FROM nginx
 EXPOSE 80
 
 # Copy the files built in the first container to the new NGINX container.
-COPY --from=builder /home/safeuser/avax-dex-ui-v4/public /usr/share/nginx/html
+COPY --from=builder /home/safeuser/avax-dex-ui-v4/build /usr/share/nginx/html
 
 #USER safeuser
