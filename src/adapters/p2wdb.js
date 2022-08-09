@@ -22,6 +22,7 @@ class P2wdbAdapter {
     this.Read = Read
     this.bchjs = localConfig.bchjs || {}
     this.p2wdbURL = localConfig.p2wdbURL || P2WDB_SERVER
+    this.config = config
   }
 
   async checkForSufficientFunds (wif) {
@@ -32,8 +33,8 @@ class P2wdbAdapter {
 
       const p2write = new this.Write({
         wif,
-        restURL: this.bchjs.restURL,
-        apiToken: this.bchjs.apiToken
+        restURL: this.config.bchRestUrl,
+        interface: this.config.bchInterface
       })
       return p2write.checkForSufficientFunds()
     } catch (error) {
@@ -48,8 +49,8 @@ class P2wdbAdapter {
       const p2write = new this.Write({
         wif,
         serverURL: this.p2wdbURL,
-        restURL: this.bchjs.restURL,
-        apiToken: this.bchjs.apiToken
+        restURL: this.config.bchRestUrl,
+        interface: this.config.bchInterface
       })
 
       // TODO: Input validation

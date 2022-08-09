@@ -101,5 +101,6 @@ module.exports = {
   appId: 'avax-dex-002',
 
   // Local Back End for BCH blockchain access. See CashStack.info for more info.
-  bchRestUrl: process.env.BCH_LOCAL_BACKEND ? process.env.BCH_LOCAL_BACKEND : 'https://free-bch.fullstack.cash'
+  bchRestUrl: process.env.BCH_LOCAL_BACKEND ? process.env.BCH_LOCAL_BACKEND : 'https://free-bch.fullstack.cash',
+  bchInterface: process.env.BCH_LOCAL_INTERFACE ? process.env.BCH_LOCAL_INTERFACE : 'consumer-api'
 }

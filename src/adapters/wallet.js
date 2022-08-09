@@ -10,14 +10,15 @@ const { Signature } = require('avalanche/dist/common/credentials')
 
 // Local libraries
 const JsonFiles = require('./json-files')
+const config = require('../../config')
 
 const WALLET_FILE = `${__dirname.toString()}/../../wallet-bch.json`
 const AVAX_WALLET_FILE = `${__dirname.toString()}/../../wallet-avax.json`
 const PROOF_OF_BURN_QTY = 0.01
 const P2WDB_TOKEN_ID =
   '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0'
-const BCH_WALLET_URL = 'https://free-bch.fullstack.cash'
-const BCH_WALLET_INTERFACE = 'consumer-api'
+const BCH_WALLET_URL = config.bchRestUrl
+const BCH_WALLET_INTERFACE = config.bchInterface
 
 class WalletAdapter {
   constructor (localConfig = {}) {
