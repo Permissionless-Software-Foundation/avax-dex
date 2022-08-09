@@ -44,9 +44,10 @@ services:
     restart: always
 
   p2wdb:
-    build:
-      context: ./p2wdb/
-      dockerfile: Dockerfile
+    image: christroutner/p2wdb:v3.0.8
+    # build:
+    #   context: ./p2wdb/
+    #   dockerfile: Dockerfile
     container_name: p2wdb
     logging:
       driver: 'json-file'
@@ -63,6 +64,7 @@ services:
       #- 5669:5669 # IPFS WS Port
     volumes:
       - ../data/ipfsdata/p2wdb:/home/safeuser/ipfs-p2wdb-service/.ipfsdata/p2wdb
+      - ./p2wdb/start-production.sh:/home/safeuser/ipfs-p2wdb-service/start-production.sh
     restart: always
 
   avax-dex:
@@ -81,7 +83,10 @@ services:
       - p2wdb
     ports:
       - '5700:5700' # <host port>:<container port>
-    # volumes:
+    volumes:
+      - ./avax-dex/start-production.sh:/home/safeuser/avax-dex/start-production.sh
+      - ../../wallet-avax.json:/home/safeuser/avax-dex/wallet-avax.json
+      - ../../wallet-bch.json:/home/safeuser/avax-dex/wallet-bch.json
     #   - ../data/ipfsdata:/home/safeuser/ipfs-service-provider/.ipfsdata
     #restart: always
 

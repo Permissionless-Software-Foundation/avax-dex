@@ -12,7 +12,7 @@ RUN apt-get update
 RUN apt-get install -y sudo git curl nano gnupg wget
 
 #Install Node and NPM
-RUN curl -sL https://deb.nodesource.com/setup_14.x -o nodesource_setup.sh
+RUN curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh
 RUN bash nodesource_setup.sh
 RUN apt-get install -y nodejs build-essential
 
@@ -46,11 +46,11 @@ RUN npm set registry http://94.130.170.209:4873/
 
 # Clone the rest.bitcoin.com repository
 WORKDIR /home/safeuser
-RUN git clone https://github.com/Permissionless-Software-Foundation/avax-dex-ui
+RUN git clone https://github.com/Permissionless-Software-Foundation/avax-dex-ui-v4
 
 # Switch to the desired branch. `master` is usually stable,
 # and `stage` has the most up-to-date changes.
-WORKDIR /home/safeuser/avax-dex-ui
+WORKDIR /home/safeuser/avax-dex-ui-v4
 
 # For development: switch to unstable branch
 RUN git checkout ct-unstable
@@ -68,6 +68,6 @@ FROM nginx
 EXPOSE 80
 
 # Copy the files built in the first container to the new NGINX container.
-COPY --from=builder /home/safeuser/avax-dex-ui/public /usr/share/nginx/html
+COPY --from=builder /home/safeuser/avax-dex-ui-v4/public /usr/share/nginx/html
 
 #USER safeuser

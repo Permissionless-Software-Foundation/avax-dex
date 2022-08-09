@@ -64,8 +64,8 @@ RUN npm install
 RUN npm run docs
 
 # Copy the wallet files
-COPY wallet-avax.json wallet-avax.json
-COPY wallet.json wallet.json
+# COPY wallet-avax.json wallet-avax.json
+# COPY wallet.json wallet.json
 
 #VOLUME /home/safeuser/keys
 

@@ -18,14 +18,14 @@ export DEBUG_LEVEL=2
 
 
 # Production database connection string.
-export DBURL=mongodb://172.17.0.1:5666/swap-service-prod
+export DBURL=mongodb://172.17.0.1:5666/avax-dex-prod
 
 # Configure REST API port
 export PORT=5700
 
 # avax-dex specific env vars
-export AVAX_DEX_ENV=production
+export AVAX_DEX=production
 export WEBHOOKSERVICE=http://172.17.0.1:5667/webhook
-export WEBHOOKTARGET=http://172.17.0.1:5700/order
+export WEBHOOKTARGET=http://172.17.0.1:5700/p2wdb
 
 npm start
