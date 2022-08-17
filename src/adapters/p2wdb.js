@@ -11,7 +11,7 @@ const config = require('../../config')
 
 // Global constants
 // const P2WDB_SERVER = 'http://localhost:5001'
-const P2WDB_SERVER = `http://localhost:${config.p2wdbPort}`
+// const P2WDB_SERVER = `http://localhost:${config.p2wdbPort}`
 // const P2WDB_SERVER = 'https://p2wdb.fullstack.cash/entry/write'
 
 class P2wdbAdapter {
@@ -21,7 +21,8 @@ class P2wdbAdapter {
     this.Write = Write
     this.Read = Read
     this.bchjs = localConfig.bchjs || {}
-    this.p2wdbURL = localConfig.p2wdbURL || P2WDB_SERVER
+    this.p2wdbURL = localConfig.p2wdbURL || config.P2WDB_URL
+    this.config = config
   }
 
   async checkForSufficientFunds (wif) {
@@ -32,8 +33,8 @@ class P2wdbAdapter {
 
       const p2write = new this.Write({
         wif,
-        restURL: this.bchjs.restURL,
-        apiToken: this.bchjs.apiToken
+        restURL: this.config.bchRestUrl,
+        interface: this.config.bchInterface
       })
       return p2write.checkForSufficientFunds()
     } catch (error) {
@@ -48,8 +49,8 @@ class P2wdbAdapter {
       const p2write = new this.Write({
         wif,
         serverURL: this.p2wdbURL,
-        restURL: this.bchjs.restURL,
-        apiToken: this.bchjs.apiToken
+        restURL: this.config.bchRestUrl,
+        interface: this.config.bchInterface
       })
 
       // TODO: Input validation

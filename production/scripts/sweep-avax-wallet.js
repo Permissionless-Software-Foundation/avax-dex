@@ -62,7 +62,7 @@ async function sweepWallet () {
           const txid1 = await rootWallet.send([{
             address: childAddr,
             assetId: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z',
-            amount: 1000010
+            amount: 1000020
           }])
           console.log(`Funded child address ${i} with 0.001 AVAX from root wallet. TXID: ${txid1}`)
 
