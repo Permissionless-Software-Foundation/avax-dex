@@ -12,7 +12,7 @@ const BchWallet = require('minimal-slp-wallet/index')
 createAvaxWallet()
 createBchWallet()
 
-async function createAvaxWallet() {
+async function createAvaxWallet () {
   const config = {
     interface: 'json-rpc',
     noUpdate: true
@@ -26,7 +26,7 @@ async function createAvaxWallet() {
   await fs.writeFile('../../wallet-avax.json', JSON.stringify(avaxWallet.walletInfo, null, 2))
 }
 
-async function createBchWallet() {
+async function createBchWallet () {
   const config = {
     interface: 'consumer-api',
     noUpdate: true
