@@ -1,0 +1,3 @@
+/*
+  This app will create new wallet files for both AVAX and BCH.
+*/
