@@ -8,11 +8,17 @@ To see more technical details, check out the [Developer Documentation](./dev-doc
 
 ## Installation
 
-It's assumed this software is being run on an AMD64 processor running Ubuntu OS, with Docker and Docker Compose installed. Notes for installing this software can be found [here](https://christroutner.github.io/trouts-blog/docs/dev-ops/overview).
+It's assumed this software is being run on an AMD64 processor running Ubuntu OS, with Docker, Docker Compose, and node.js installed. Notes for installing this software can be found [here](https://christroutner.github.io/trouts-blog/docs/dev-ops/overview).
 
 - `git clone https://github.com/Permissionless-Software-Foundation/avax-dex`
-- `cd production/docker`
+- `cd avax-dex`
+- `npm install`
+- `cd production/scripts`
+- `node create-wallets.js`
+- `cd ../docker/`
 - `docker-compose pull`
+- `docker-compose build`
+- `docker-compose up -d`
 
 ## Usage
 
