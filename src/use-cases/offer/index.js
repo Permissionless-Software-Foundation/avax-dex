@@ -42,9 +42,18 @@ class OfferUseCases {
       const txid = offerObj.data.utxoTxid
       const vout = offerObj.data.utxoVout
 
+      // Verify that the UTXO is valid and not spent.
       const utxoStatus = await this.adapters.wallet.getTxOut(txid, vout)
       console.log('utxoStatus: ', utxoStatus)
       if (!utxoStatus) return false
+
+      // Ensure the record does not already exist. Prevent creating duplicate Offers.
+      const p2wdbHash = offerObj.p2wdbHash
+      const prevOffers = await this.OfferModel.find({ p2wdbHash })
+      if (prevOffers.length > 0) {
+        console.log(`Duplicate entry. An Offer with P2WDB hash ${p2wdbHash} already exists in the avax-dex database.`)
+        return false
+      }
 
       const offerEntity = this.offerEntity.validate(offerObj)
       console.log('offerEntity: ', offerEntity)
