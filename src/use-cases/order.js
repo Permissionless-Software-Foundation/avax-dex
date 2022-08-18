@@ -140,6 +140,9 @@ class OrderLib {
   // Ensure that the wallet has enough AVAX and tokens to complete the trade.
   async ensureFunds (orderEntity) {
     try {
+      // Update UTXO store
+      await this.adapters.wallet.avaxWallet.getUtxos()
+
       // Get Assets.
       const assets = this.adapters.wallet.avaxWallet.utxos.assets
 
