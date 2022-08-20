@@ -229,6 +229,13 @@ class AvalancheWallet {
           symbol: 'AVAX',
           denomination: 9,
           amount: 18000000
+        },
+        {
+          assetID: '2jgTFB6MM4vwLzUNWFYGPfyeQfpLaEqj4XWku6FoW7vaGrrEd5',
+          name: 'Arepa Token',
+          symbol: 'ARP',
+          denomination: 2,
+          amount: 380
         }
       ]
     }

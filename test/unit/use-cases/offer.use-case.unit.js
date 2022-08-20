@@ -79,6 +79,8 @@ describe('#offer-use-case', () => {
     })
 
     it('should create an offer and return the hash', async () => {
+      sandbox.stub(uut.OfferModel,'find').resolves([])
+
       const offerObj = {
         appId: 'swapTest555',
         data: {
