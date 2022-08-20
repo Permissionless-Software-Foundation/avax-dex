@@ -67,7 +67,6 @@ class WebHook {
     }
   }
 
-
   // Returns a promise that will not resolve until a webhook has been successfully
   // created with the P2WDB.
   // Dev Note: This was created because establishing a webhook between bch-dex

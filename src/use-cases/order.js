@@ -147,17 +147,17 @@ class OrderLib {
       const assets = this.adapters.wallet.avaxWallet.utxos.assets
       console.log(`this.adapters.wallet.avaxWallet.utxos: ${JSON.stringify(this.adapters.wallet.avaxWallet.utxos, null, 2)}`)
 
-      if(!assets) return false
+      if (!assets) return false
 
       // Sell Order
       if (orderEntity.buyOrSell.includes('sell')) {
         const asset = assets.find(item => item.assetID === orderEntity.tokenId)
         console.log('asset: ', asset)
 
-        if(!asset) throw new Error(`Asset with assetID ${orderEntity.tokenId} not found.`)
+        if (!asset) throw new Error(`Asset with assetID ${orderEntity.tokenId} not found.`)
 
         let denomination = 0
-        if(asset.denomination) {
+        if (asset.denomination) {
           denomination = asset.denomination
         }
 
