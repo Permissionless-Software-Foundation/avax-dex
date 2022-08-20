@@ -284,7 +284,8 @@ class OfferUseCases {
         const thisOffer = offers[i]
         // console.log(`thisOrder: ${JSON.stringify(thisOrder, null, 2)}`)
 
-        // Check if UTXO is still valie
+        // Check if UTXO is still valid
+        console.log(`Inspecting this UTXO: ${thisOffer.utxoTxid}:${thisOffer.utxoVout}`)
         const result = await this.adapters.wallet.getTxOut(thisOffer.utxoTxid, thisOffer.utxoVout)
         // console.log('result: ', result)
 
