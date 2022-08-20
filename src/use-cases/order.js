@@ -140,15 +140,28 @@ class OrderLib {
   // Ensure that the wallet has enough AVAX and tokens to complete the trade.
   async ensureFunds (orderEntity) {
     try {
+      // Update UTXO store
+      await this.adapters.wallet.avaxWallet.getUtxos()
+
       // Get Assets.
       const assets = this.adapters.wallet.avaxWallet.utxos.assets
+      console.log(`this.adapters.wallet.avaxWallet.utxos: ${JSON.stringify(this.adapters.wallet.avaxWallet.utxos, null, 2)}`)
+
+      if (!assets) return false
 
       // Sell Order
       if (orderEntity.buyOrSell.includes('sell')) {
         const asset = assets.find(item => item.assetID === orderEntity.tokenId)
+        console.log('asset: ', asset)
+
+        if (!asset) throw new Error(`Asset with assetID ${orderEntity.tokenId} not found.`)
+
+        let denomination = 0
+        if (asset.denomination) {
+          denomination = asset.denomination
+        }
 
         // Turn token into sats
-        const denomination = asset.denomination || 0
         const amount = orderEntity.numTokens * Math.pow(10, denomination)
         if (!asset || asset.amount < amount) {
           throw new Error(
