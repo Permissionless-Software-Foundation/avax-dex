@@ -66,12 +66,12 @@ class Adapters {
       this.p2wdb = new P2wdbAdapter({ bchjs: this.bchjs })
 
       if (this.config.env !== 'test') {
+        // Wait until a webhook is established with the P2WDB
+        await this.webhook.waitUntilSuccess(this.config.webhookTarget)
+
         // Instance the wallets.
         await this.wallet.instanceBchWallet(bchWallet, this.bchjs)
         await this.wallet.instanceAvaxWallet(avaxWallet)
-
-        // Wait until a webhook is established with the P2WDB
-        await this.webhook.waitUntilSuccess(this.config.webhookTarget)
       }
 
       console.log('Async Adapters have been started.')
