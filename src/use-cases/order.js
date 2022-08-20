@@ -145,7 +145,6 @@ class OrderLib {
 
       // Get Assets.
       const assets = this.adapters.wallet.avaxWallet.utxos.assets
-      console.log(`this.adapters.wallet.avaxWallet.utxos: ${JSON.stringify(this.adapters.wallet.avaxWallet.utxos, null, 2)}`)
 
       if (!assets) return false
 
