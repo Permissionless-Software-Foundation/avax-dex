@@ -53,7 +53,7 @@ RUN git clone https://github.com/Permissionless-Software-Foundation/avax-dex-ui-
 WORKDIR /home/safeuser/avax-dex-ui-v4
 
 # For development: switch to unstable branch
-RUN git checkout ct-unstable
+RUN git checkout demo
 
 # Install dependencies
 #RUN mkdir .ipfsdata
