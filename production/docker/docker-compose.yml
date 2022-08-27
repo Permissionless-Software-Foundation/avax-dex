@@ -43,7 +43,7 @@ services:
     restart: always
 
   p2wdb:
-    image: christroutner/p2wdb:v3.0.8
+    image: christroutner/p2wdb:v3.0.9
     # build:
     #   context: ./p2wdb/
     #   dockerfile: Dockerfile
