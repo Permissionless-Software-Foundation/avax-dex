@@ -21,6 +21,9 @@ async function createAvaxWallet () {
   const avaxWallet = new AvaxWallet(undefined, config)
   await avaxWallet.walletInfoPromise
 
+  avaxWallet.walletInfo.networkID = 1
+  avaxWallet.walletInfo.nextAddress = 1
+
   console.log('avaxWallet: ', avaxWallet.walletInfo)
 
   await fs.writeFile('../../wallet-avax.json', JSON.stringify(avaxWallet.walletInfo, null, 2))
